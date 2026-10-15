@@ -1,0 +1,342 @@
+{
+  "users": [
+    {
+      "id": "user_demo_1",
+      "email": "alibaghirov51@gmail.com",
+      "displayName": "Əli Bağırov",
+      "passwordHash": "dfe50bdb0ee495c9b04fc4967a69b5169620df9cb32400c1a527355e5c9caf42",
+      "preferredCurrency": "AZN",
+      "timeZone": "Asia/Baku",
+      "openingBalance": 1250,
+      "avatarUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+      "notificationPreferences": {
+        "dailyReminders": true,
+        "reminderTime": "20:00",
+        "milestoneAlerts": true,
+        "weeklySummary": true
+      },
+      "createdAt": "2026-09-20T12:36:57.478Z"
+    }
+  ],
+  "sessions": [],
+  "transactions": [
+    {
+      "id": "tx_1",
+      "userId": "user_demo_1",
+      "type": "income",
+      "amount": 2800,
+      "date": "2026-10-01T10:00:00Z",
+      "category": "salary",
+      "description": "Aylıq Əməkhaqqı",
+      "paymentMethod": "bank_transfer",
+      "note": "Maaş kartına köçürmə",
+      "createdAt": "2026-10-01T10:00:00Z",
+      "updatedAt": "2026-10-01T10:00:00Z"
+    },
+    {
+      "id": "tx_2",
+      "userId": "user_demo_1",
+      "type": "income",
+      "amount": 450,
+      "date": "2026-10-08T15:30:00Z",
+      "category": "freelance",
+      "description": "UI/UX Dizayn layihəsi",
+      "paymentMethod": "bank_transfer",
+      "createdAt": "2026-10-08T15:30:00Z",
+      "updatedAt": "2026-10-08T15:30:00Z"
+    },
+    {
+      "id": "tx_3",
+      "userId": "user_demo_1",
+      "type": "expense",
+      "amount": 600,
+      "date": "2026-10-02T12:00:00Z",
+      "category": "rent",
+      "description": "Mənzil kirayəsi",
+      "paymentMethod": "bank_transfer",
+      "createdAt": "2026-10-02T12:00:00Z",
+      "updatedAt": "2026-10-02T12:00:00Z"
+    },
+    {
+      "id": "tx_4",
+      "userId": "user_demo_1",
+      "type": "expense",
+      "amount": 145.5,
+      "date": "2026-10-05T18:20:00Z",
+      "category": "food",
+      "description": "Bravo Supermarket həftəlik alış-veriş",
+      "paymentMethod": "card",
+      "isImported": true,
+      "bankId": "bank_conn_1",
+      "bankName": "ABB",
+      "providerTransactionId": "abb_tx_101",
+      "createdAt": "2026-10-05T18:20:00Z",
+      "updatedAt": "2026-10-05T18:20:00Z"
+    },
+    {
+      "id": "tx_5",
+      "userId": "user_demo_1",
+      "type": "expense",
+      "amount": 65,
+      "date": "2026-10-10T14:10:00Z",
+      "category": "utilities",
+      "description": "Azərişıq və Azəriqaz kommunal",
+      "paymentMethod": "card",
+      "createdAt": "2026-10-10T14:10:00Z",
+      "updatedAt": "2026-10-10T14:10:00Z"
+    },
+    {
+      "id": "tx_6",
+      "userId": "user_demo_1",
+      "type": "expense",
+      "amount": 40,
+      "date": "2026-10-12T09:45:00Z",
+      "category": "transport",
+      "description": "BakıKart və Bolt Taxi xərcləri",
+      "paymentMethod": "card",
+      "isImported": true,
+      "bankId": "bank_conn_1",
+      "bankName": "ABB",
+      "providerTransactionId": "abb_tx_102",
+      "createdAt": "2026-10-12T09:45:00Z",
+      "updatedAt": "2026-10-12T09:45:00Z"
+    },
+    {
+      "id": "tx_7",
+      "userId": "user_demo_1",
+      "type": "expense",
+      "amount": 85,
+      "date": "2026-10-15T11:00:00Z",
+      "category": "food",
+      "description": "Restoran və nahar",
+      "paymentMethod": "card",
+      "createdAt": "2026-10-15T11:00:00Z",
+      "updatedAt": "2026-10-15T11:00:00Z"
+    }
+  ],
+  "goals": [
+    {
+      "id": "goal_1",
+      "userId": "user_demo_1",
+      "name": "Yeni Noutbuk (MacBook Pro)",
+      "targetAmount": 3200,
+      "savedAmount": 1200,
+      "deadline": "2026-10-30",
+      "preferredDailyMinimum": 25,
+      "category": "Texnologiya",
+      "icon": "Laptop",
+      "priority": "high",
+      "status": "active",
+      "isLocked": false,
+      "createdAt": "2026-09-25T12:36:57.478Z",
+      "updatedAt": "2026-10-15T12:36:57.478Z"
+    },
+    {
+      "id": "goal_2",
+      "userId": "user_demo_1",
+      "name": "Təcili Ehtiyat Fondu (3 aylıq)",
+      "targetAmount": 5000,
+      "savedAmount": 650,
+      "deadline": "2027-01-13",
+      "preferredDailyMinimum": 15,
+      "category": "Təhlükəsizlik",
+      "icon": "ShieldCheck",
+      "priority": "high",
+      "status": "active",
+      "isLocked": true,
+      "coolingOffMinutes": 60,
+      "createdAt": "2026-09-15T12:36:57.478Z",
+      "updatedAt": "2026-10-15T12:36:57.478Z"
+    },
+    {
+      "id": "goal_3",
+      "userId": "user_demo_1",
+      "name": "Yay Tətili - İtaliya Səyahəti",
+      "targetAmount": 1800,
+      "savedAmount": 1800,
+      "category": "Səyahət",
+      "icon": "Plane",
+      "priority": "medium",
+      "status": "completed",
+      "isLocked": false,
+      "createdAt": "2026-08-16T12:36:57.478Z",
+      "updatedAt": "2026-10-10T12:36:57.478Z"
+    }
+  ],
+  "goal_contributions": [
+    {
+      "id": "gc_1",
+      "goalId": "goal_1",
+      "userId": "user_demo_1",
+      "type": "contribution",
+      "amount": 500,
+      "date": "2026-10-01T11:00:00Z",
+      "note": "Maaşdan ilkin ayırma",
+      "createdAt": "2026-10-01T11:00:00Z"
+    },
+    {
+      "id": "gc_2",
+      "goalId": "goal_1",
+      "userId": "user_demo_1",
+      "type": "contribution",
+      "amount": 150,
+      "date": "2026-10-09T16:00:00Z",
+      "note": "Frilans gəlirindən qənaət",
+      "createdAt": "2026-10-09T16:00:00Z"
+    },
+    {
+      "id": "gc_3",
+      "goalId": "goal_1",
+      "userId": "user_demo_1",
+      "type": "contribution",
+      "amount": 50,
+      "date": "2026-10-15T09:30:00Z",
+      "note": "Gündəlik qənaət köçürməsi",
+      "createdAt": "2026-10-15T09:30:00Z"
+    },
+    {
+      "id": "gc_4",
+      "goalId": "goal_2",
+      "userId": "user_demo_1",
+      "type": "contribution",
+      "amount": 400,
+      "date": "2026-10-02T10:00:00Z",
+      "note": "Ehtiyat fondu artırılması",
+      "createdAt": "2026-10-02T10:00:00Z"
+    }
+  ],
+  "bank_connections": [
+    {
+      "id": "bank_conn_1",
+      "userId": "user_demo_1",
+      "bankCode": "abb",
+      "bankName": "ABB (Azərbaycan Beynəlxalq Bankı)",
+      "accountNumberMasked": "*4821",
+      "status": "connected",
+      "lastSyncedAt": "2026-10-15T11:36:57.478Z",
+      "autoSync": true,
+      "importedCount": 6,
+      "createdAt": "2026-09-25T12:36:57.478Z"
+    }
+  ],
+  "streaks": [
+    {
+      "userId": "user_demo_1",
+      "currentStreak": 24,
+      "longestStreak": 24,
+      "lastActiveDate": "2026-10-15",
+      "history": [
+        {
+          "date": "2026-09-22",
+          "activityType": "transaction"
+        },
+        {
+          "date": "2026-09-23",
+          "activityType": "savings_contribution"
+        },
+        {
+          "date": "2026-09-24",
+          "activityType": "transaction"
+        },
+        {
+          "date": "2026-09-25",
+          "activityType": "savings_contribution"
+        },
+        {
+          "date": "2026-09-26",
+          "activityType": "transaction"
+        },
+        {
+          "date": "2026-09-27",
+          "activityType": "savings_contribution"
+        },
+        {
+          "date": "2026-09-28",
+          "activityType": "transaction"
+        },
+        {
+          "date": "2026-09-29",
+          "activityType": "savings_contribution"
+        },
+        {
+          "date": "2026-09-30",
+          "activityType": "transaction"
+        },
+        {
+          "date": "2026-10-01",
+          "activityType": "savings_contribution"
+        },
+        {
+          "date": "2026-10-02",
+          "activityType": "transaction"
+        },
+        {
+          "date": "2026-10-03",
+          "activityType": "savings_contribution"
+        },
+        {
+          "date": "2026-10-04",
+          "activityType": "transaction"
+        },
+        {
+          "date": "2026-10-05",
+          "activityType": "savings_contribution"
+        },
+        {
+          "date": "2026-10-06",
+          "activityType": "transaction"
+        },
+        {
+          "date": "2026-10-07",
+          "activityType": "savings_contribution"
+        },
+        {
+          "date": "2026-10-08",
+          "activityType": "transaction"
+        },
+        {
+          "date": "2026-10-09",
+          "activityType": "savings_contribution"
+        },
+        {
+          "date": "2026-10-10",
+          "activityType": "transaction"
+        },
+        {
+          "date": "2026-10-11",
+          "activityType": "savings_contribution"
+        },
+        {
+          "date": "2026-10-12",
+          "activityType": "transaction"
+        },
+        {
+          "date": "2026-10-13",
+          "activityType": "savings_contribution"
+        },
+        {
+          "date": "2026-10-14",
+          "activityType": "transaction"
+        },
+        {
+          "date": "2026-10-15",
+          "activityType": "savings_contribution"
+        }
+      ]
+    }
+  ],
+  "user_achievements": [
+    {
+      "id": "ach_1",
+      "userId": "user_demo_1",
+      "achievementId": "streak_10",
+      "unlockedAt": "2026-10-01T12:36:57.478Z"
+    },
+    {
+      "id": "ach_2",
+      "userId": "user_demo_1",
+      "achievementId": "streak_20",
+      "unlockedAt": "2026-10-11T12:36:57.478Z"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Qənaət - Şəxsi Maliyyə və Ağıllı Yığım",
+  "description": "Azərbaycan üçün şəxsi maliyyə, gəlir-xərc izlənməsi, dinamik hədəfli qənaət, bank inteqrasiyası və vərdiş zənciri (streak) platforması.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
