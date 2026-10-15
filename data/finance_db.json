@@ -112,6 +112,88 @@
       "paymentMethod": "card",
       "createdAt": "2026-10-15T11:00:00Z",
       "updatedAt": "2026-10-15T11:00:00Z"
+    },
+    {
+      "id": "tx_9ef0e0ef-e4fc-451f-b234-e892fe25dae7",
+      "userId": "user_demo_1",
+      "type": "expense",
+      "amount": 32.8,
+      "date": "2026-10-15T11:38:27.847Z",
+      "category": "food",
+      "description": "Bravo Supermarket Əhmədli",
+      "paymentMethod": "card",
+      "isImported": true,
+      "bankId": "bank_conn_1",
+      "bankName": "ABB",
+      "providerTransactionId": "abb_tx_auto_2026_01",
+      "note": "Avtomatik idxal edildi (ABB (Azərbaycan Beynəlxalq Bankı))",
+      "createdAt": "2026-10-15T13:38:27.847Z",
+      "updatedAt": "2026-10-15T13:38:27.847Z"
+    },
+    {
+      "id": "tx_7089850d-8969-4552-9847-06c83b383177",
+      "userId": "user_demo_1",
+      "type": "expense",
+      "amount": 6.5,
+      "date": "2026-10-15T08:38:27.847Z",
+      "category": "transport",
+      "description": "Bolt Taxi Bakı",
+      "paymentMethod": "card",
+      "isImported": true,
+      "bankId": "bank_conn_1",
+      "bankName": "ABB",
+      "providerTransactionId": "abb_tx_auto_2026_02",
+      "note": "Avtomatik idxal edildi (ABB (Azərbaycan Beynəlxalq Bankı))",
+      "createdAt": "2026-10-15T13:38:27.847Z",
+      "updatedAt": "2026-10-15T13:38:27.847Z"
+    },
+    {
+      "id": "tx_9b2c3cb3-e6d5-4ac5-860e-714b4bcca1e4",
+      "userId": "user_demo_1",
+      "type": "expense",
+      "amount": 14,
+      "date": "2026-10-15T01:38:27.847Z",
+      "category": "food",
+      "description": "Wolt Kofe və Şirniyyat",
+      "paymentMethod": "card",
+      "isImported": true,
+      "bankId": "bank_conn_1",
+      "bankName": "ABB",
+      "providerTransactionId": "abb_tx_auto_2026_03",
+      "note": "Avtomatik idxal edildi (ABB (Azərbaycan Beynəlxalq Bankı))",
+      "createdAt": "2026-10-15T13:38:27.847Z",
+      "updatedAt": "2026-10-15T13:38:27.847Z"
+    },
+    {
+      "id": "tx_7362e12a-0d44-43e8-b352-311616fe0953",
+      "userId": "user_demo_1",
+      "type": "expense",
+      "amount": 50,
+      "date": "2026-10-14T13:38:27.847Z",
+      "category": "transport",
+      "description": "SOCAR Yanacaqdoldurma",
+      "paymentMethod": "card",
+      "isImported": true,
+      "bankId": "bank_conn_1",
+      "bankName": "ABB",
+      "providerTransactionId": "abb_tx_auto_2026_04",
+      "note": "Avtomatik idxal edildi (ABB (Azərbaycan Beynəlxalq Bankı))",
+      "createdAt": "2026-10-15T13:38:27.847Z",
+      "updatedAt": "2026-10-15T13:38:27.847Z"
+    },
+    {
+      "id": "tx_98ebabab-4080-4978-92c8-faa6b9c9dc51",
+      "userId": "user_demo_1",
+      "type": "expense",
+      "amount": 100,
+      "date": "2026-10-15T00:00:00.000Z",
+      "category": "transport",
+      "description": "BakuBus",
+      "paymentMethod": "cash",
+      "isRecurring": true,
+      "recurringInterval": "monthly",
+      "createdAt": "2026-10-15T13:42:42.059Z",
+      "updatedAt": "2026-10-15T13:42:42.059Z"
     }
   ],
   "goals": [
@@ -120,7 +202,7 @@
       "userId": "user_demo_1",
       "name": "Yeni Noutbuk (MacBook Pro)",
       "targetAmount": 3200,
-      "savedAmount": 1200,
+      "savedAmount": 1330,
       "deadline": "2026-10-30",
       "preferredDailyMinimum": 25,
       "category": "Texnologiya",
@@ -129,7 +211,7 @@
       "status": "active",
       "isLocked": false,
       "createdAt": "2026-09-25T12:36:57.478Z",
-      "updatedAt": "2026-10-15T12:36:57.478Z"
+      "updatedAt": "2026-10-15T13:45:20.505Z"
     },
     {
       "id": "goal_2",
@@ -161,6 +243,22 @@
       "isLocked": false,
       "createdAt": "2026-08-16T12:36:57.478Z",
       "updatedAt": "2026-10-10T12:36:57.478Z"
+    },
+    {
+      "id": "goal_c499c2d4-b473-4f7c-b890-696be6d476fc",
+      "userId": "user_demo_1",
+      "name": "Marriage",
+      "targetAmount": 25000,
+      "savedAmount": 0,
+      "deadline": "2030-10-28",
+      "category": "Ailə",
+      "icon": "Home",
+      "priority": "high",
+      "status": "active",
+      "isLocked": false,
+      "coolingOffMinutes": 0,
+      "createdAt": "2026-10-15T13:44:15.521Z",
+      "updatedAt": "2026-10-15T13:44:15.521Z"
     }
   ],
   "goal_contributions": [
@@ -203,6 +301,36 @@
       "date": "2026-10-02T10:00:00Z",
       "note": "Ehtiyat fondu artırılması",
       "createdAt": "2026-10-02T10:00:00Z"
+    },
+    {
+      "id": "gc_3bb9a776-8e3b-4984-968e-f8c8ab9fbeae",
+      "goalId": "goal_1",
+      "userId": "user_demo_1",
+      "type": "contribution",
+      "amount": 10,
+      "date": "2026-10-15T13:39:05.879Z",
+      "note": "Yığım töhfəsi",
+      "createdAt": "2026-10-15T13:39:05.879Z"
+    },
+    {
+      "id": "gc_b71721b8-fba0-4b42-b2d0-f4a777b1f35b",
+      "goalId": "goal_1",
+      "userId": "user_demo_1",
+      "type": "contribution",
+      "amount": 20,
+      "date": "2026-10-15T13:39:15.471Z",
+      "note": "Yığım töhfəsi",
+      "createdAt": "2026-10-15T13:39:15.471Z"
+    },
+    {
+      "id": "gc_c64d1b55-0b96-46cd-9052-647b340ae8d9",
+      "goalId": "goal_1",
+      "userId": "user_demo_1",
+      "type": "contribution",
+      "amount": 100,
+      "date": "2026-10-15T13:45:20.505Z",
+      "note": "Yığım töhfəsi",
+      "createdAt": "2026-10-15T13:45:20.505Z"
     }
   ],
   "bank_connections": [
@@ -213,9 +341,9 @@
       "bankName": "ABB (Azərbaycan Beynəlxalq Bankı)",
       "accountNumberMasked": "*4821",
       "status": "connected",
-      "lastSyncedAt": "2026-10-15T11:36:57.478Z",
+      "lastSyncedAt": "2026-10-15T13:38:31.321Z",
       "autoSync": true,
-      "importedCount": 6,
+      "importedCount": 10,
       "createdAt": "2026-09-25T12:36:57.478Z"
     }
   ],
@@ -316,6 +444,26 @@
         },
         {
           "date": "2026-10-14",
+          "activityType": "transaction"
+        },
+        {
+          "date": "2026-10-15",
+          "activityType": "savings_contribution"
+        },
+        {
+          "date": "2026-10-15",
+          "activityType": "transaction"
+        },
+        {
+          "date": "2026-10-15",
+          "activityType": "savings_contribution"
+        },
+        {
+          "date": "2026-10-15",
+          "activityType": "savings_contribution"
+        },
+        {
+          "date": "2026-10-15",
           "activityType": "transaction"
         },
         {
