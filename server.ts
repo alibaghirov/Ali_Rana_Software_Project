@@ -1332,18 +1332,48 @@ app.post('/api/reset-demo', (req: Request, res: Response) => {
 const startServer = async () => {
   const isProd = process.env.NODE_ENV === 'production';
   const PORT = Number(process.env.PORT) || 3000;
+  const distDir = path.resolve(process.cwd(), 'dist');
+  const distIndex = path.resolve(distDir, 'index.html');
 
-  if (!isProd) {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
-    });
-    app.use(vite.middlewares);
-  } else {
-    app.use(express.static('dist'));
+  if (isProd && fs.existsSync(distIndex)) {
+    console.log(`[Production] Serving static files from: ${distDir}`);
+    app.use(express.static(distDir));
     app.get('*', (_req, res) => {
-      res.sendFile(path.resolve('dist', 'index.html'));
+      res.sendFile(distIndex);
     });
+  } else {
+    if (isProd) {
+      console.warn(`[WARNING] 'dist/index.html' not found at ${distIndex}. Falling back to Vite middleware...`);
+    }
+    try {
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: 'spa',
+      });
+      app.use(vite.middlewares);
+    } catch (viteErr) {
+      console.error('Failed to start Vite middleware:', viteErr);
+      app.get('*', (_req, res) => {
+        res.status(500).send(`
+          <!DOCTYPE html>
+          <html>
+          <head><title>Build Required</title><meta charset="utf-8"></head>
+          <body style="font-family:system-ui,sans-serif;padding:40px;background:#0f172a;color:#f8fafc;line-height:1.6;">
+            <div style="max-width:560px;margin:40px auto;background:#1e293b;padding:32px;border-radius:16px;border:1px solid #334155;box-shadow:0 10px 25px rgba(0,0,0,0.5);">
+              <h2 style="color:#ef4444;margin-top:0;">dist/index.html tapılmadı (Build olunmayıb)</h2>
+              <p>Layihə Render və ya serverdə işə salınıb, lakin frontend build (vite build) icra olunmayıb.</p>
+              <div style="background:#0b1120;padding:16px;border-radius:8px;font-family:monospace;margin:20px 0;border:1px solid #1e293b;">
+                <p style="margin:0 0 8px 0;color:#94a3b8;">Render Settings bölməsində düzəliş edin:</p>
+                <strong style="color:#38bdf8;">Build Command:</strong> npm install && npm run build<br><br>
+                <strong style="color:#38bdf8;">Start Command:</strong> npm start
+              </div>
+              <p style="font-size:14px;color:#94a3b8;">Düzəlişdən sonra "Manual Deploy" -> "Clear build cache & deploy" seçin.</p>
+            </div>
+          </body>
+          </html>
+        `);
+      });
+    }
   }
 
   app.listen(PORT, '0.0.0.0', () => {

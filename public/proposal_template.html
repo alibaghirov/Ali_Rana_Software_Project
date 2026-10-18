@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CSCI 3509 Project Proposal - Qənaət</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 0;
+    }
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Times New Roman", Times, Georgia, serif;
+      color: #1a1a1a;
+      background: #ffffff;
+      font-size: 11pt;
+      line-height: 1.35;
+    }
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      height: 297mm;
+      padding: 24mm 24mm 22mm 24mm;
+      position: relative;
+      page-break-after: always;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .content-area {
+      flex: 1;
+    }
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10pt;
+      color: #222222;
+      padding-top: 10px;
+      margin-top: auto;
+    }
+
+    /* Page 1 Header */
+    .top-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      margin-bottom: 55px;
+    }
+    .ada-logo-container {
+      width: 140px;
+      flex-shrink: 0;
+    }
+    .header-text {
+      font-size: 11pt;
+      color: #111;
+      line-height: 1.3;
+      padding-top: 5px;
+    }
+    .header-text .dept {
+      font-weight: 500;
+    }
+    .header-text .course {
+      font-weight: bold;
+    }
+
+    .main-title {
+      text-align: center;
+      font-size: 23pt;
+      font-weight: bold;
+      color: #111111;
+      margin-top: 25px;
+      margin-bottom: 90px;
+    }
+
+    .project-name-banner {
+      margin-bottom: 25px;
+    }
+    .project-name-title {
+      font-size: 20pt;
+      font-weight: bold;
+      color: #1c7c8a;
+      margin: 0 0 8px 0;
+    }
+    .project-name-line {
+      height: 2px;
+      background-color: #1c7c8a;
+      width: 100%;
+    }
+
+    .meta-details {
+      margin-top: 25px;
+      margin-bottom: 50px;
+      font-size: 11pt;
+      line-height: 1.45;
+    }
+    .meta-details p {
+      margin: 4px 0;
+    }
+    .meta-details .bold {
+      font-weight: bold;
+    }
+    .meta-details .submission-note {
+      margin-top: 25px;
+      max-width: 90%;
+      color: #111;
+    }
+
+    /* Section Headings */
+    h2.section-heading {
+      font-size: 14pt;
+      font-weight: bold;
+      color: #1c7c8a;
+      margin: 14px 0 8px 0;
+    }
+    p {
+      margin: 6px 0;
+      text-align: justify;
+      font-size: 10.5pt;
+    }
+    p.instruction-label {
+      font-style: italic;
+      color: #2b2b2b;
+      margin: 4px 0;
+    }
+    ul.rules-list {
+      margin: 4px 0 10px 18px;
+      padding: 0;
+      font-size: 10pt;
+    }
+    ul.rules-list li {
+      margin-bottom: 4px;
+      line-height: 1.35;
+    }
+    ul.rules-list li strong {
+      font-weight: bold;
+    }
+
+    /* Tables */
+    table.academic-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      margin-bottom: 14px;
+      font-size: 9.5pt;
+    }
+    table.academic-table th {
+      background-color: #1c7c8a;
+      color: #ffffff;
+      font-weight: bold;
+      padding: 7px 10px;
+      text-align: left;
+      border: 1px solid #1c7c8a;
+    }
+    table.academic-table td {
+      border: 1px solid #777777;
+      padding: 6px 9px;
+      vertical-align: top;
+      line-height: 1.3;
+    }
+    table.page1-table {
+      margin-top: 40px;
+      width: 100%;
+      border-collapse: collapse;
+    }
+    table.page1-table th {
+      border: 1px solid #555;
+      background-color: #f7f7f7;
+      color: #000;
+      font-weight: bold;
+      padding: 6px 10px;
+      text-align: left;
+      font-size: 10.5pt;
+    }
+    table.page1-table td {
+      border: 1px solid #555;
+      padding: 8px 10px;
+      font-size: 10.5pt;
+    }
+
+    .priority-must {
+      font-weight: bold;
+      color: #0d5f22;
+    }
+    .priority-should {
+      font-weight: bold;
+      color: #1f509e;
+    }
+    .priority-could {
+      font-weight: bold;
+      color: #7b4306;
+    }
+
+    .alert-code {
+      font-family: "Courier New", Courier, monospace;
+      font-size: 8.5pt;
+      font-weight: bold;
+      color: #8b0000;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== PAGE 1 ==================== -->
+  <div class="page">
+    <div class="content-area">
+      <div class="top-header">
+        <div class="ada-logo-container">
+          <svg viewBox="0 0 160 55" width="145" height="50" xmlns="http://www.w3.org/2000/svg">
+            <!-- Stylized emblem -->
+            <path d="M22 6 C12 6 6 15 6 25 C6 35 13 44 24 44 C26 44 28 43 30 42 C24 37 20 29 20 21 C20 15 22 10 26 7 C24 6 23 6 22 6 Z" fill="#9e1b32" />
+            <path d="M25 8 C21 12 18 19 18 26 C18 34 23 41 29 44 C35 41 39 34 39 26 C39 19 36 12 32 8 C30 6 27 6 25 8 Z" fill="#b3243c" />
+            <circle cx="28" cy="22" r="3.5" fill="#f4b223" />
+            <!-- ADA Letters -->
+            <text x="46" y="38" font-family="'Times New Roman', Times, serif" font-size="34" font-weight="bold" fill="#00355f" letter-spacing="0.5">ADA</text>
+            <!-- University Subtext -->
+            <text x="48" y="48" font-family="'Times New Roman', Times, serif" font-size="7.5" font-weight="600" fill="#666666" letter-spacing="1.5">UNIVERSİTETİ</text>
+          </svg>
+        </div>
+        <div class="header-text">
+          <div>ADA University</div>
+          <div class="dept">School of Information Technologies and Engineering</div>
+          <div class="course">CSCI 3509: Intro to Software Engineering</div>
+          <div>Fall 2026</div>
+        </div>
+      </div>
+
+      <div class="main-title">
+        Project Proposal
+      </div>
+
+      <div class="project-name-banner">
+        <div class="project-name-title">Qənaət: Smart Personal Finance & Micro-Savings Platform</div>
+        <div class="project-name-line"></div>
+      </div>
+
+      <div class="meta-details">
+        <p><span class="bold">Project team:</span> Qənaət Engineering Team</p>
+        <p><span class="bold">Instructor:</span> Kamila Ismayilova</p>
+        <div class="submission-note">
+          Submitted in partial fulfillment of the requirements of the CSCI 3509: Intro to Software Engineering course project
+        </div>
+      </div>
+
+      <table class="page1-table">
+        <thead>
+          <tr>
+            <th style="width: 32%;">Team member</th>
+            <th>Contribution to the homework</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Ali Baghirov</strong></td>
+            <td>Project lead and full-stack software engineer: Designed system architecture and REST API specifications; implemented the dynamic micro-savings algorithm, exact decimal financial math, and open banking transaction deduplication; integrated OTP/FIN authentication, habit review gamification streak engine, and monthly reporting analytics with CSV export.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="footer">
+      <div>CSCI 3509: Intro to Software Engineering</div>
+      <div>Page 1 of 4</div>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 2 ==================== -->
+  <div class="page">
+    <div class="content-area">
+      <h2 class="section-heading">1. Project Overview</h2>
+      
+      <p>
+        <strong>Qənaət</strong> is a localized smart personal finance and micro-savings web platform developed specifically for the Azerbaijani market (AZN). In everyday financial management, individuals often lack clarity on how much discretionary money they can safely spend after accounting for upcoming commitments, while impulsive withdrawals frequently sabotage long-term savings intentions. Qənaət eliminates this friction by answering five immediate daily financial questions at a glance, connecting to local open banking APIs with automated transaction deduplication, and dynamically calculating exact daily saving contributions toward user-defined goals. To safeguard financial commitments, the platform introduces an anti-impulse cooling-off safety lock on withdrawals and reinforces daily discipline through a habit-building gamification streak engine.
+      </p>
+
+      <p>
+        <strong>Primary Users:</strong>
+      </p>
+      <ul class="rules-list" style="margin-top: 2px; margin-bottom: 6px;">
+        <li><strong>Everyday Savers and Young Professionals:</strong> Need an intuitive, AZN-denominated expense tracker that imports card transactions from local banks and categorizes spending without tedious manual ledger entry.</li>
+        <li><strong>Goal-Oriented Individuals and Students:</strong> Need structured, algorithmic guidance on how much to deposit daily toward specific life milestones (e.g., tech purchases, emergency fund, tuition) paired with withdrawal cooling-off locks to curb impulse spending.</li>
+        <li><strong>Household Budgeters and Financial Planners:</strong> Need comprehensive month-over-month cash flow summaries, spending breakdowns by category, multi-user workspace switching, and authenticated CSV data exports.</li>
+      </ul>
+
+      <p>
+        <strong>Main System Features:</strong>
+      </p>
+      <ul class="rules-list" style="margin-top: 2px; margin-bottom: 8px;">
+        <li><strong>5-Question Instant Financial Dashboard:</strong> Delivers instant clarity on total account balance, unallocated available cash, monthly earnings, monthly expenses, and net cash flow health.</li>
+        <li><strong>Dynamic Daily Savings Recommendation Engine:</strong> Automatically computes the exact daily contribution required for each goal based on target amount, accumulated balance, and days remaining until deadline.</li>
+        <li><strong>Anti-Impulse Savings Security Lock (Soyuma Müddəti):</strong> Prevents spontaneous dipping into savings goals by enforcing an intentional cooling-off waiting period before funds can be withdrawn.</li>
+        <li><strong>Open Banking Integration with Automated Deduplication:</strong> Ingests transaction feeds from Azerbaijani banks (Kapital Bank, ABB, Leo, CBAR sandbox) and filters duplicate incoming records.</li>
+        <li><strong>Discipline Gamification & Review Streak Tracker:</strong> Motivates consistent daily financial tracking by awarding consecutive day streak counters, milestone badges (10, 20, 30, 40, 100 days), and experience levels.</li>
+        <li><strong>Comparative Monthly Analytics & CSV Export:</strong> Displays month-over-month variances in revenue and expenses alongside visual category distribution charts, with one-click authenticated CSV download.</li>
+        <li><strong>Secure Multi-Factor Authentication:</strong> Authenticates users through mobile phone numbers, national FİN codes, and time-expiring 6-digit SMS OTP verification.</li>
+      </ul>
+
+      <h2 class="section-heading">2. Tech Stack</h2>
+      <p style="font-size: 9.5pt; margin-bottom: 4px;">
+        The system architecture strictly decouples the client-side presentation layer from the server-side REST API, leverages structured persistence with atomic integrity, and integrates machine learning intelligence with automated real-time operational alerting.
+      </p>
+
+      <table class="academic-table">
+        <thead>
+          <tr>
+            <th style="width: 22%;">Layer</th>
+            <th style="width: 28%;">Technology</th>
+            <th>Why we chose it</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Frontend (UI)</strong></td>
+            <td>React 19, TypeScript, Tailwind CSS, Lucide Icons</td>
+            <td>Provides a lightning-fast, reactive component architecture with strict compile-time type safety; Tailwind CSS enables an ergonomic, high-density dark fintech UI tailored for clarity and mobile responsiveness.</td>
+          </tr>
+          <tr>
+            <td><strong>Backend</strong></td>
+            <td>Node.js, Express, TypeScript</td>
+            <td>Asynchronous, non-blocking I/O runtime optimal for RESTful micro-services and transaction processing; shared TypeScript interfaces between client and server prevent schema drift.</td>
+          </tr>
+          <tr>
+            <td><strong>Database</strong></td>
+            <td>Structured JSON Document Store / PostgreSQL-ready engine</td>
+            <td>Employs atomic file-locking transactions with schema-validated records for zero-latency local persistence, reliable ledger integrity, and instant backup reproducibility without vendor lock-in.</td>
+          </tr>
+          <tr>
+            <td><strong>AI service / model</strong></td>
+            <td>Google Gemini 2.5 Flash / Interactions API</td>
+            <td>Provides rapid sub-second inference to parse unstructured Azerbaijani bank transaction memos into standardized spending categories and generate personalized monthly saving recommendations.</td>
+          </tr>
+          <tr>
+            <td><strong>Monitoring & alerting</strong></td>
+            <td>Node.js Health Daemon & Telegram Bot API</td>
+            <td>Completely free, lightweight operational monitoring that automatically catches uncaught errors, API latency spikes, and brute-force attempts, dispatching real-time notifications directly to the developer Telegram channel.</td>
+          </tr>
+          <tr>
+            <td><strong>Other tools</strong></td>
+            <td>Git, GitHub, Vite, Playwright CLI, Canvas Confetti</td>
+            <td>Git and GitHub manage source control and collaboration; Vite powers rapid hot-reloading; Playwright CLI conducts automated browser testing; and Canvas Confetti enriches goal completion UX.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="footer">
+      <div>CSCI 3509: Intro to Software Engineering</div>
+      <div>Page 2 of 4</div>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 3 ==================== -->
+  <div class="page">
+    <div class="content-area">
+      <h2 class="section-heading">3. Functional Requirements</h2>
+      <p style="font-size: 9.5pt; margin-bottom: 6px;">
+        Each functional requirement is specified using the formal "The system shall ..." syntax and prioritized using the MoSCoW framework (Must, Should, Could). Key intelligent automation features are marked with <strong>(AI)</strong>.
+      </p>
+
+      <table class="academic-table" style="font-size: 9pt;">
+        <thead>
+          <tr>
+            <th style="width: 14%;">ID</th>
+            <th>Requirement</th>
+            <th style="width: 14%; text-align: center;">Priority</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>FR-01</strong></td>
+            <td>The system shall authenticate users via their mobile phone number, Azerbaijani FİN code, and a time-limited 6-digit SMS OTP verification code.</td>
+            <td style="text-align: center;" class="priority-must">Must</td>
+          </tr>
+          <tr>
+            <td><strong>FR-02</strong></td>
+            <td>The system shall maintain and compute real-time account balances, earmarked goal reserves, unallocated discretionary cash, and net cash flow using exact two-decimal math.</td>
+            <td style="text-align: center;" class="priority-must">Must</td>
+          </tr>
+          <tr>
+            <td><strong>FR-03</strong></td>
+            <td>The system shall dynamically calculate and display the daily savings contribution required for each active goal based on target amount, current balance, and target deadline.</td>
+            <td style="text-align: center;" class="priority-must">Must</td>
+          </tr>
+          <tr>
+            <td><strong>FR-04</strong></td>
+            <td>The system shall enforce an anti-impulse cooling-off lock on savings goals, disallowing immediate withdrawals until a user-configured countdown timer (e.g., 30 minutes) expires.</td>
+            <td style="text-align: center;" class="priority-must">Must</td>
+          </tr>
+          <tr>
+            <td><strong>FR-05</strong></td>
+            <td>The system shall connect to open banking sandbox providers (Kapital Bank, ABB, Leo, CBAR) and import incoming transactions while automatically deduplicating feeds.</td>
+            <td style="text-align: center;" class="priority-must">Must</td>
+          </tr>
+          <tr>
+            <td><strong>FR-06 (AI)</strong></td>
+            <td>The system shall utilize an AI language model (Gemini 2.5) to analyze raw, unstructured bank transaction descriptions and automatically classify them into localized categories (Food, Transport, Housing, Utilities).</td>
+            <td style="text-align: center;" class="priority-should">Should</td>
+          </tr>
+          <tr>
+            <td><strong>FR-07 (AI)</strong></td>
+            <td>The system shall generate context-aware AI financial advice and daily habit summaries by analyzing monthly net cash flow variances and saving consistency patterns.</td>
+            <td style="text-align: center;" class="priority-should">Should</td>
+          </tr>
+          <tr>
+            <td><strong>FR-08</strong></td>
+            <td>The system shall track consecutive daily review streaks, award milestone badges (10, 20, 30, 40, and 100 days), and update user financial discipline experience levels.</td>
+            <td style="text-align: center;" class="priority-should">Should</td>
+          </tr>
+          <tr>
+            <td><strong>FR-09</strong></td>
+            <td>The system shall generate comprehensive month-over-month comparative financial reports and allow authenticated export of transaction histories in CSV format.</td>
+            <td style="text-align: center;" class="priority-could">Could</td>
+          </tr>
+          <tr>
+            <td><strong>FR-10</strong></td>
+            <td>The system shall allow users to manage their profile settings, switch between multiple demo workspaces, and toggle localized interface languages (Azerbaijani, English).</td>
+            <td style="text-align: center;" class="priority-could">Could</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2 class="section-heading" style="margin-top: 14px;">4. Monitoring and Alerting</h2>
+      <p style="font-size: 9.5pt;">
+        To guarantee high availability and early anomaly detection, Qənaət incorporates an automated monitoring and alerting subsystem. The system continuously tracks: (1) backend service availability and HTTP response latencies; (2) server error spikes (HTTP 500 status rates); (3) suspicious authentication behavior such as repeated failed OTP or FİN attempts; (4) open banking connector disconnections or synchronization failures; and (5) AI inference timeouts.
+      </p>
+
+      <p style="font-size: 9.5pt; margin-top: 4px;">
+        <strong>How it works:</strong> (1) Operational events and performance telemetry are captured in real time through Express middleware, health check endpoints, and unhandled exception hooks; (2) Rule evaluators compare metrics against predefined failure thresholds; (3) When an anomaly or threshold violation is detected, an asynchronous dispatcher invokes the Telegram Bot API webhook; (4) The Telegram bot formats and transmits an urgent markdown alert directly to the team's dedicated engineering channel.
+      </p>
+
+      <p style="font-size: 9.5pt; margin-top: 4px;">
+        <strong>Secret Management:</strong> In compliance with security best practices, the Telegram bot token (<code>TELEGRAM_BOT_TOKEN</code>) and destination chat identifier (<code>TELEGRAM_CHAT_ID</code>) are strictly isolated inside a local <code>.env</code> file. This file is loaded at runtime through secure environment configuration and is explicitly registered in <code>.gitignore</code>, ensuring credentials are never committed to the public Git repository.
+      </p>
+
+      <table class="academic-table" style="font-size: 8.8pt; margin-top: 8px;">
+        <thead>
+          <tr>
+            <th style="width: 25%;">What we monitor</th>
+            <th style="width: 35%;">When it triggers an alert</th>
+            <th>Alert message</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Backend Health Check</strong></td>
+            <td>Health check endpoint (<code>/api/health</code>) fails 3 consecutive times in 60 seconds</td>
+            <td class="alert-code">[ALERT] Backend is DOWN! Health check failed 3 consecutive times on port :3000.</td>
+          </tr>
+          <tr>
+            <td><strong>Critical Server Error Spike</strong></td>
+            <td>More than 5 internal server errors (HTTP 500) occur within a 1-minute window</td>
+            <td class="alert-code">[ALERT] Critical Error Surge: 5+ HTTP 500 responses detected across REST endpoints within 60s.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="footer">
+      <div>CSCI 3509: Intro to Software Engineering</div>
+      <div>Page 3 of 4</div>
+    </div>
+  </div>
+
+  <!-- ==================== PAGE 4 ==================== -->
+  <div class="page">
+    <div class="content-area">
+      <h2 class="section-heading" style="margin-top: 0; font-size: 12pt;">4. Monitoring and Alerting (Continued)</h2>
+      <p style="font-size: 9.5pt; margin-bottom: 8px;">
+        The table below details the full operational incident matrix, detection rules, and automated Telegram bot dispatch notifications:
+      </p>
+
+      <table class="academic-table" style="font-size: 9pt;">
+        <thead>
+          <tr>
+            <th style="width: 25%;">What we monitor</th>
+            <th style="width: 35%;">When it triggers an alert</th>
+            <th>Alert message</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Suspicious Auth & Brute-force</strong></td>
+            <td>5 consecutive failed OTP codes or password attempts for a phone number or FİN within 5 minutes</td>
+            <td class="alert-code">[ALERT] Potential Brute-force Attack: 5 failed authentication attempts for target account within 5m.</td>
+          </tr>
+          <tr>
+            <td><strong>Open Banking Sync Failure</strong></td>
+            <td>External banking provider API (Kapital, ABB, Leo, CBAR) fails or drops connection 3 times in a row</td>
+            <td class="alert-code">[WARNING] Open Banking Sync Failed: Bank provider API unreachable or returned invalid response schema.</td>
+          </tr>
+          <tr>
+            <td><strong>AI Inference Latency & Quota</strong></td>
+            <td>Gemini AI transaction categorization takes &gt; 4.5 seconds or returns rate limit / quota exhaustion</td>
+            <td class="alert-code">[WARNING] AI Service Degradation: Gemini categorization latency exceeded 4.5s or returned quota error.</td>
+          </tr>
+          <tr>
+            <td><strong>API Response Time Latency</strong></td>
+            <td>REST API average response latency exceeds 3.5 seconds across rolling 5-minute sampling window</td>
+            <td class="alert-code">[WARNING] High API Latency: Endpoints averaging 3.8s response time over last 5 minutes.</td>
+          </tr>
+          <tr>
+            <td><strong>Database Persistence Failure</strong></td>
+            <td>Atomic filesystem write fails, file lock contention occurs, or database corruption is detected</td>
+            <td class="alert-code">[CRITICAL] Database Write Error: Atomic flush failed for finance_db.json. Disk write permission error.</td>
+          </tr>
+          <tr>
+            <td><strong>Cooling-off Safety Lock Tamper</strong></td>
+            <td>Direct goal withdrawal attempt initiated without an active or expired unlock cooling-off request</td>
+            <td class="alert-code">[WARNING] Security Breach Attempt: Direct withdrawal rejected on locked goal #ID without cooling-off timer.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="margin-top: 30px; padding: 16px 20px; border-left: 3px solid #1c7c8a; background-color: #f7fafc; font-size: 9.5pt; line-height: 1.45;">
+        <strong style="color: #1c7c8a; display: block; margin-bottom: 5px; font-size: 10pt;">Course Project Alignment & Implementation Status:</strong>
+        All core architectural layers described in this proposal have been developed into an operational software system:
+        <ul style="margin: 6px 0 0 16px; padding: 0;">
+          <li><strong>Production-ready Frontend & Backend:</strong> React 19 SPA running in synchrony with a TypeScript Express REST API on port 3000.</li>
+          <li><strong>Financial Calculations Engine:</strong> Verified with exact 2-decimal math, dynamic countdown algorithms, and streak mechanics.</li>
+          <li><strong>Automated Testing & Browser Verification:</strong> Fully validated using Playwright headless browser automation, confirming zero console regressions.</li>
+          <li><strong>Localized Fintech UX:</strong> Bilingual support with native Azerbaijani financial terminology and AZN currency formatting.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div>CSCI 3509: Intro to Software Engineering</div>
+      <div>Page 4 of 4</div>
+    </div>
+  </div>
+
+</body>
+</html>
