@@ -28,6 +28,7 @@ export interface UserAchievementRecord {
 export interface DatabaseSchema {
   users: UserRecord[];
   sessions: { token: string; userId: string; expiresAt: string }[];
+  otps: import('../types/finance.ts').OtpVerificationRecord[];
   transactions: Transaction[];
   goals: SavingsGoal[];
   goal_contributions: GoalContribution[];
@@ -39,6 +40,7 @@ export interface DatabaseSchema {
 const defaultDb: DatabaseSchema = {
   users: [],
   sessions: [],
+  otps: [],
   transactions: [],
   goals: [],
   goal_contributions: [],
@@ -98,12 +100,15 @@ export const seedDefaultData = () => {
   const demoUser: UserRecord = {
     id: demoUserId,
     email: 'alibaghirov51@gmail.com',
+    phoneNumber: '+994501234567',
+    finCode: '5ABC123',
     displayName: 'Əli Bağırov',
     passwordHash: hashPassword('qenaet2026'),
     preferredCurrency: 'AZN',
     timeZone: 'Asia/Baku',
     openingBalance: 1250.0,
     avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
+    isPhoneVerified: true,
     notificationPreferences: {
       dailyReminders: true,
       reminderTime: '20:00',
@@ -255,113 +260,15 @@ export const seedDefaultData = () => {
     },
   ];
 
-  // Goals
-  // Calculate a deadline 15 days in the future
-  const futureDeadline = new Date(now.getTime() + 15 * 86400000).toISOString().slice(0, 10);
-  const emergencyDeadline = new Date(now.getTime() + 90 * 86400000).toISOString().slice(0, 10);
-
-  const goals: SavingsGoal[] = [
-    {
-      id: 'goal_1',
-      userId: demoUserId,
-      name: 'Yeni Noutbuk (MacBook Pro)',
-      targetAmount: 3200.0,
-      savedAmount: 1200.0,
-      deadline: futureDeadline,
-      preferredDailyMinimum: 25.0,
-      category: 'Texnologiya',
-      icon: 'Laptop',
-      priority: 'high',
-      status: 'active',
-      isLocked: false,
-      createdAt: new Date(now.getTime() - 20 * 86400000).toISOString(),
-      updatedAt: now.toISOString(),
-    },
-    {
-      id: 'goal_2',
-      userId: demoUserId,
-      name: 'Təcili Ehtiyat Fondu (3 aylıq)',
-      targetAmount: 5000.0,
-      savedAmount: 650.0,
-      deadline: emergencyDeadline,
-      preferredDailyMinimum: 15.0,
-      category: 'Təhlükəsizlik',
-      icon: 'ShieldCheck',
-      priority: 'high',
-      status: 'active',
-      isLocked: true,
-      coolingOffMinutes: 60,
-      createdAt: new Date(now.getTime() - 30 * 86400000).toISOString(),
-      updatedAt: now.toISOString(),
-    },
-    {
-      id: 'goal_3',
-      userId: demoUserId,
-      name: 'Yay Tətili - İtaliya Səyahəti',
-      targetAmount: 1800.0,
-      savedAmount: 1800.0,
-      category: 'Səyahət',
-      icon: 'Plane',
-      priority: 'medium',
-      status: 'completed',
-      isLocked: false,
-      createdAt: new Date(now.getTime() - 60 * 86400000).toISOString(),
-      updatedAt: new Date(now.getTime() - 5 * 86400000).toISOString(),
-    },
-  ];
-
-  // Goal contributions
-  const goal_contributions: GoalContribution[] = [
-    {
-      id: 'gc_1',
-      goalId: 'goal_1',
-      userId: demoUserId,
-      type: 'contribution',
-      amount: 500.0,
-      date: `${todayStr.slice(0, 7)}-01T11:00:00Z`,
-      note: 'Maaşdan ilkin ayırma',
-      createdAt: `${todayStr.slice(0, 7)}-01T11:00:00Z`,
-    },
-    {
-      id: 'gc_2',
-      goalId: 'goal_1',
-      userId: demoUserId,
-      type: 'contribution',
-      amount: 150.0,
-      date: `${todayStr.slice(0, 7)}-09T16:00:00Z`,
-      note: 'Frilans gəlirindən qənaət',
-      createdAt: `${todayStr.slice(0, 7)}-09T16:00:00Z`,
-    },
-    {
-      id: 'gc_3',
-      goalId: 'goal_1',
-      userId: demoUserId,
-      type: 'contribution',
-      amount: 50.0,
-      date: `${todayStr}T09:30:00Z`,
-      note: 'Gündəlik qənaət köçürməsi',
-      createdAt: `${todayStr}T09:30:00Z`,
-    },
-    {
-      id: 'gc_4',
-      goalId: 'goal_2',
-      userId: demoUserId,
-      type: 'contribution',
-      amount: 400.0,
-      date: `${todayStr.slice(0, 7)}-02T10:00:00Z`,
-      note: 'Ehtiyat fondu artırılması',
-      createdAt: `${todayStr.slice(0, 7)}-02T10:00:00Z`,
-    },
-  ];
-
   db.users.push(demoUser);
   db.streaks.push(streak);
   db.user_achievements.push(...achievements);
   db.bank_connections.push(bankConn);
   db.transactions.push(...transactions);
-  db.goals.push(...goals);
-  db.goal_contributions.push(...goal_contributions);
+  // Default goals are empty so user adds and deletes their own goals freely
+  db.goals = [];
+  db.goal_contributions = [];
 
   saveDb(db);
-  console.log('Database initialized and seeded with demo user.');
+  console.log('Database initialized with user, clean goals state.');
 };

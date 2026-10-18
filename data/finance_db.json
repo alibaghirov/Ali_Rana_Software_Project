@@ -16,9 +16,68 @@
         "weeklySummary": true
       },
       "createdAt": "2026-09-20T12:36:57.478Z"
+    },
+    {
+      "id": "user_83baa105-c974-4e31-99f9-d681d3715815",
+      "phoneNumber": "+994507778899",
+      "finCode": "7XYZ987",
+      "displayName": "Kamran Əliyev",
+      "email": "7xyz987@qenaet.az",
+      "passwordHash": "e6dfc3700f8f5f7f2db5a2b10bfd22b039217bded63df16bbd67882a557e0fe4",
+      "preferredCurrency": "AZN",
+      "timeZone": "Asia/Baku",
+      "openingBalance": 850,
+      "isPhoneVerified": true,
+      "notificationPreferences": {
+        "dailyReminders": true,
+        "reminderTime": "20:00",
+        "milestoneAlerts": true,
+        "weeklySummary": true
+      },
+      "createdAt": "2026-10-17T09:31:09.766Z"
+    },
+    {
+      "id": "user_205c7e7c-8045-4d4e-a1bf-4249a0c5564b",
+      "phoneNumber": "+994504140641",
+      "finCode": "8888888",
+      "displayName": "Ali Baghirov",
+      "email": "8888888@qenaet.az",
+      "passwordHash": "da21e97436ba285dd0a44c2e95d634a358239b1078f4ac7c84cf8f691f598aad",
+      "preferredCurrency": "AZN",
+      "timeZone": "Asia/Baku",
+      "openingBalance": 0,
+      "isPhoneVerified": true,
+      "notificationPreferences": {
+        "dailyReminders": true,
+        "reminderTime": "20:00",
+        "milestoneAlerts": true,
+        "weeklySummary": true
+      },
+      "createdAt": "2026-10-18T07:40:32.789Z"
     }
   ],
-  "sessions": [],
+  "sessions": [
+    {
+      "token": "tok_85fbaedb-7de8-40c0-b335-c875b9e102d0",
+      "userId": "user_demo_1",
+      "expiresAt": "2026-11-16T09:27:05.265Z"
+    },
+    {
+      "token": "tok_775f58d3-a8d1-4f53-909f-97efa1ba5243",
+      "userId": "user_83baa105-c974-4e31-99f9-d681d3715815",
+      "expiresAt": "2026-11-16T09:31:09.767Z"
+    },
+    {
+      "token": "tok_25064a3d-75ee-4da9-803a-47f836125ba0",
+      "userId": "user_205c7e7c-8045-4d4e-a1bf-4249a0c5564b",
+      "expiresAt": "2026-11-17T07:40:32.789Z"
+    },
+    {
+      "token": "tok_bd4b597e-2e38-428a-82e1-fb57ea3cb44d",
+      "userId": "user_demo_1",
+      "expiresAt": "2026-11-17T07:45:36.383Z"
+    }
+  ],
   "transactions": [
     {
       "id": "tx_1",
@@ -194,145 +253,24 @@
       "recurringInterval": "monthly",
       "createdAt": "2026-10-15T13:42:42.059Z",
       "updatedAt": "2026-10-15T13:42:42.059Z"
-    }
-  ],
-  "goals": [
-    {
-      "id": "goal_1",
-      "userId": "user_demo_1",
-      "name": "Yeni Noutbuk (MacBook Pro)",
-      "targetAmount": 3200,
-      "savedAmount": 1330,
-      "deadline": "2026-10-30",
-      "preferredDailyMinimum": 25,
-      "category": "Texnologiya",
-      "icon": "Laptop",
-      "priority": "high",
-      "status": "active",
-      "isLocked": false,
-      "createdAt": "2026-09-25T12:36:57.478Z",
-      "updatedAt": "2026-10-15T13:45:20.505Z"
     },
     {
-      "id": "goal_2",
-      "userId": "user_demo_1",
-      "name": "Təcili Ehtiyat Fondu (3 aylıq)",
-      "targetAmount": 5000,
-      "savedAmount": 650,
-      "deadline": "2027-01-13",
-      "preferredDailyMinimum": 15,
-      "category": "Təhlükəsizlik",
-      "icon": "ShieldCheck",
-      "priority": "high",
-      "status": "active",
-      "isLocked": true,
-      "coolingOffMinutes": 60,
-      "createdAt": "2026-09-15T12:36:57.478Z",
-      "updatedAt": "2026-10-15T12:36:57.478Z"
-    },
-    {
-      "id": "goal_3",
-      "userId": "user_demo_1",
-      "name": "Yay Tətili - İtaliya Səyahəti",
-      "targetAmount": 1800,
-      "savedAmount": 1800,
-      "category": "Səyahət",
-      "icon": "Plane",
-      "priority": "medium",
-      "status": "completed",
-      "isLocked": false,
-      "createdAt": "2026-08-16T12:36:57.478Z",
-      "updatedAt": "2026-10-10T12:36:57.478Z"
-    },
-    {
-      "id": "goal_c499c2d4-b473-4f7c-b890-696be6d476fc",
-      "userId": "user_demo_1",
-      "name": "Marriage",
-      "targetAmount": 25000,
-      "savedAmount": 0,
-      "deadline": "2030-10-28",
-      "category": "Ailə",
-      "icon": "Home",
-      "priority": "high",
-      "status": "active",
-      "isLocked": false,
-      "coolingOffMinutes": 0,
-      "createdAt": "2026-10-15T13:44:15.521Z",
-      "updatedAt": "2026-10-15T13:44:15.521Z"
-    }
-  ],
-  "goal_contributions": [
-    {
-      "id": "gc_1",
-      "goalId": "goal_1",
-      "userId": "user_demo_1",
-      "type": "contribution",
-      "amount": 500,
-      "date": "2026-10-01T11:00:00Z",
-      "note": "Maaşdan ilkin ayırma",
-      "createdAt": "2026-10-01T11:00:00Z"
-    },
-    {
-      "id": "gc_2",
-      "goalId": "goal_1",
-      "userId": "user_demo_1",
-      "type": "contribution",
-      "amount": 150,
-      "date": "2026-10-09T16:00:00Z",
-      "note": "Frilans gəlirindən qənaət",
-      "createdAt": "2026-10-09T16:00:00Z"
-    },
-    {
-      "id": "gc_3",
-      "goalId": "goal_1",
-      "userId": "user_demo_1",
-      "type": "contribution",
-      "amount": 50,
-      "date": "2026-10-15T09:30:00Z",
-      "note": "Gündəlik qənaət köçürməsi",
-      "createdAt": "2026-10-15T09:30:00Z"
-    },
-    {
-      "id": "gc_4",
-      "goalId": "goal_2",
-      "userId": "user_demo_1",
-      "type": "contribution",
-      "amount": 400,
-      "date": "2026-10-02T10:00:00Z",
-      "note": "Ehtiyat fondu artırılması",
-      "createdAt": "2026-10-02T10:00:00Z"
-    },
-    {
-      "id": "gc_3bb9a776-8e3b-4984-968e-f8c8ab9fbeae",
-      "goalId": "goal_1",
-      "userId": "user_demo_1",
-      "type": "contribution",
-      "amount": 10,
-      "date": "2026-10-15T13:39:05.879Z",
-      "note": "Yığım töhfəsi",
-      "createdAt": "2026-10-15T13:39:05.879Z"
-    },
-    {
-      "id": "gc_b71721b8-fba0-4b42-b2d0-f4a777b1f35b",
-      "goalId": "goal_1",
-      "userId": "user_demo_1",
-      "type": "contribution",
-      "amount": 20,
-      "date": "2026-10-15T13:39:15.471Z",
-      "note": "Yığım töhfəsi",
-      "createdAt": "2026-10-15T13:39:15.471Z"
-    },
-    {
-      "id": "gc_c64d1b55-0b96-46cd-9052-647b340ae8d9",
-      "goalId": "goal_1",
-      "userId": "user_demo_1",
-      "type": "contribution",
+      "id": "tx_e5fb09b7-d5ab-4aea-83c0-83bf9f37fc8e",
+      "userId": "user_205c7e7c-8045-4d4e-a1bf-4249a0c5564b",
+      "type": "income",
       "amount": 100,
-      "date": "2026-10-15T13:45:20.505Z",
-      "note": "Yığım töhfəsi",
-      "createdAt": "2026-10-15T13:45:20.505Z"
+      "date": "2026-10-18T00:00:00.000Z",
+      "category": "gifts",
+      "description": "Super",
+      "paymentMethod": "cash",
+      "isRecurring": false,
+      "recurringInterval": "monthly",
+      "createdAt": "2026-10-18T07:46:35.301Z",
+      "updatedAt": "2026-10-18T07:46:35.301Z"
     }
   ],
+  "goals": [],
+  "goal_contributions": [],
   "bank_connections": [
     {
       "id": "bank_conn_1",
@@ -350,9 +288,9 @@
   "streaks": [
     {
       "userId": "user_demo_1",
-      "currentStreak": 24,
+      "currentStreak": 1,
       "longestStreak": 24,
-      "lastActiveDate": "2026-10-15",
+      "lastActiveDate": "2026-10-17",
       "history": [
         {
           "date": "2026-09-22",
@@ -469,6 +407,38 @@
         {
           "date": "2026-10-15",
           "activityType": "savings_contribution"
+        },
+        {
+          "date": "2026-10-17",
+          "activityType": "savings_contribution"
+        }
+      ]
+    },
+    {
+      "userId": "user_83baa105-c974-4e31-99f9-d681d3715815",
+      "currentStreak": 1,
+      "longestStreak": 1,
+      "lastActiveDate": "2026-10-17",
+      "history": [
+        {
+          "date": "2026-10-17",
+          "activityType": "registration"
+        }
+      ]
+    },
+    {
+      "userId": "user_205c7e7c-8045-4d4e-a1bf-4249a0c5564b",
+      "currentStreak": 1,
+      "longestStreak": 1,
+      "lastActiveDate": "2026-10-18",
+      "history": [
+        {
+          "date": "2026-10-18",
+          "activityType": "registration"
+        },
+        {
+          "date": "2026-10-18",
+          "activityType": "transaction"
         }
       ]
     }
@@ -485,6 +455,32 @@
       "userId": "user_demo_1",
       "achievementId": "streak_20",
       "unlockedAt": "2026-10-11T12:36:57.478Z"
+    }
+  ],
+  "otps": [
+    {
+      "id": "otp_a098f4a8-9d71-4d55-8b92-eec231b7e951",
+      "phoneNumber": "+994501234567",
+      "code": "738233",
+      "expiresAt": "2026-10-17T09:31:55.004Z",
+      "verified": true,
+      "createdAt": "2026-10-17T09:26:55.005Z"
+    },
+    {
+      "id": "otp_767567d7-da5c-4652-bf26-99cccc09dcc0",
+      "phoneNumber": "+994507778899",
+      "code": "920298",
+      "expiresAt": "2026-10-17T09:36:08.706Z",
+      "verified": true,
+      "createdAt": "2026-10-17T09:31:08.706Z"
+    },
+    {
+      "id": "otp_9722178f-d16d-4a8a-981c-31de521ac936",
+      "phoneNumber": "+994504140641",
+      "code": "660475",
+      "expiresAt": "2026-10-18T07:45:30.284Z",
+      "verified": true,
+      "createdAt": "2026-10-18T07:40:30.285Z"
     }
   ]
 }

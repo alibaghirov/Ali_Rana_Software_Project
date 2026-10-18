@@ -8,6 +8,7 @@ import {
   Globe,
   User,
   RefreshCw,
+  LogOut,
 } from 'lucide-react';
 import type { Language } from '../i18n/translations.ts';
 import { getTranslation } from '../i18n/translations.ts';
@@ -23,6 +24,7 @@ interface HeaderProps {
   onOpenAddGoal: () => void;
   onOpenProfile: () => void;
   onQuickSync: () => void;
+  onLogout: () => void;
   isSyncing: boolean;
 }
 
@@ -36,6 +38,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAddGoal,
   onOpenProfile,
   onQuickSync,
+  onLogout,
   isSyncing,
 }) => {
   const t = (key: any) => getTranslation(key, language);
@@ -138,6 +141,15 @@ export const Header: React.FC<HeaderProps> = ({
                   {user?.preferredCurrency || 'AZN'}
                 </p>
               </div>
+            </button>
+
+            {/* Logout button */}
+            <button
+              onClick={onLogout}
+              title="Çıxış (Hesabdan çıx)"
+              className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-slate-700 hover:border-rose-500/30 transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
             </button>
           </div>
         </div>

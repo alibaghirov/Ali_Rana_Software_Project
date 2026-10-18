@@ -22,6 +22,7 @@ interface ProfileModalProps {
   onUpdateProfile: (updates: any) => Promise<void>;
   onSwitchUser: (userId: string) => Promise<void>;
   onResetDemo: () => Promise<void>;
+  onLogout: () => void;
   language: Language;
 }
 
@@ -32,6 +33,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   onUpdateProfile,
   onSwitchUser,
   onResetDemo,
+  onLogout,
   language,
 }) => {
   const t = (key: any) => getTranslation(key, language);
@@ -270,6 +272,21 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>Sıfırla</span>
+          </button>
+        </div>
+
+        {/* Logout from Account */}
+        <div className="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between">
+          <div>
+            <span className="text-xs font-semibold text-slate-200 block">Hesabdan Çıxış</span>
+            <span className="text-[10px] text-slate-500">Cari sessiyanı sonlandırır və giriş səhifəsinə qayıdır</span>
+          </div>
+          <button
+            onClick={onLogout}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-600 hover:text-white text-slate-300 text-xs font-semibold border border-slate-700 transition-colors"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span>Çıxış et</span>
           </button>
         </div>
       </div>

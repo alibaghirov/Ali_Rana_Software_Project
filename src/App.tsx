@@ -26,6 +26,8 @@ import { TransactionsTab } from './components/TransactionsTab.tsx';
 import { BankIntegrationTab } from './components/BankIntegrationTab.tsx';
 import { ReportsTab } from './components/ReportsTab.tsx';
 import { ProfileModal } from './components/ProfileModal.tsx';
+import { LoginPage } from './components/LoginPage.tsx';
+import { ErrorBoundary } from './components/ErrorBoundary.tsx';
 import type { Language } from './i18n/translations.ts';
 import { getTranslation } from './i18n/translations.ts';
 import type {
@@ -41,10 +43,11 @@ type ActiveTab = 'dashboard' | 'transactions' | 'goals' | 'banks' | 'reports';
 export default function App() {
   const [language, setLanguage] = useState<Language>('az');
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
-  const [currentUserId, setCurrentUserId] = useState<string>('user_demo_1');
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem('qenaet_auth_token'));
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   // App state
-  const [user, setUser] = useState<UserProfile | null>(null);
   const [summary, setSummary] = useState<FinancialSummary | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [goals, setGoals] = useState<any[]>([]);
@@ -54,23 +57,27 @@ export default function App() {
   const [categoryBreakdown, setCategoryBreakdown] = useState<any[]>([]);
 
   // UI state
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [quickActionType, setQuickActionType] = useState<'income' | 'expense' | 'goal' | null>(null);
 
   const t = (key: any) => getTranslation(key, language);
 
-  // Headers helper with current user id for isolated workspaces
+  // Headers helper with authorization token
   const getHeaders = useCallback(() => {
-    return {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      'x-user-id': currentUserId,
     };
-  }, [currentUserId]);
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
+  }, [token]);
 
-  // Load all app data
+  // Load all app data for authenticated user
   const loadData = useCallback(async () => {
+    if (!token) return;
+    setIsLoading(true);
     try {
       const headers = getHeaders();
 
@@ -90,7 +97,14 @@ export default function App() {
       if (userRes.ok) {
         const u = await userRes.json();
         setUser(u.user);
+      } else {
+        // Token invalid or expired
+        localStorage.removeItem('qenaet_auth_token');
+        setToken(null);
+        setUser(null);
+        return;
       }
+
       if (summaryRes.ok) {
         const s = await summaryRes.json();
         setSummary(s);
@@ -123,12 +137,40 @@ export default function App() {
       console.error('Error loading data:', err);
     } finally {
       setIsLoading(false);
+      setIsCheckingAuth(false);
     }
-  }, [getHeaders]);
+  }, [getHeaders, token]);
 
+  // Initial check on mount
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    if (token) {
+      loadData();
+    } else {
+      setIsCheckingAuth(false);
+    }
+  }, [token, loadData]);
+
+  const handleLoginSuccess = (newToken: string, newUser: UserProfile) => {
+    localStorage.setItem('qenaet_auth_token', newToken);
+    setToken(newToken);
+    setUser(newUser);
+  };
+
+  const handleLogout = async () => {
+    try {
+      if (token) {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: getHeaders(),
+        });
+      }
+    } catch (err) {
+      console.error('Logout error:', err);
+    }
+    localStorage.removeItem('qenaet_auth_token');
+    setToken(null);
+    setUser(null);
+  };
 
   // Transactions Handlers
   const handleAddTransaction = async (txData: any) => {
@@ -224,6 +266,18 @@ export default function App() {
     await loadData();
   };
 
+  const handleDeleteGoal = async (goalId: string) => {
+    const res = await fetch(`/api/goals/${goalId}`, {
+      method: 'DELETE',
+      headers: getHeaders(),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Hədəf silinmədi');
+    }
+    await loadData();
+  };
+
   // Bank Handlers
   const handleConnectBank = async (bankCode: string) => {
     const res = await fetch('/api/banks/connect', {
@@ -310,23 +364,74 @@ export default function App() {
   };
 
   const handleSwitchUser = async (userId: string) => {
-    setCurrentUserId(userId);
-    setIsProfileOpen(false);
-    setIsLoading(true);
+    try {
+      const res = await fetch('/api/auth/switch-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setToken(data.token);
+        setUser(data.user);
+        localStorage.setItem('qenaet_auth_token', data.token);
+        setIsProfileOpen(false);
+      }
+    } catch (err) {
+      console.error('Error switching user:', err);
+    }
   };
 
   const handleResetDemo = async () => {
-    if (!confirm('Bütün nümunə məlumatları ilkin vəziyyətinə qaytarmaq istəyirsiniz?')) return;
-    await fetch('/api/reset-demo', { method: 'POST' });
-    setCurrentUserId('user_demo_1');
-    setIsProfileOpen(false);
-    await loadData();
+    try {
+      await fetch('/api/reset-demo', { method: 'POST', headers: getHeaders() });
+      setIsProfileOpen(false);
+      await loadData();
+    } catch (err) {
+      console.error('Error resetting demo:', err);
+    }
   };
 
   // CSV Export
-  const handleExportCsv = () => {
-    window.location.href = `/api/reports/export-csv`;
+  const handleExportCsv = async () => {
+    try {
+      const res = await fetch('/api/reports/export-csv', {
+        headers: getHeaders(),
+      });
+      if (!res.ok) throw new Error('CSV yüklənə bilmədi');
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `qenaet_emeliyyatlar_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Error exporting CSV:', err);
+    }
   };
+
+  // 1. Initial Auth verification loading screen
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-400">
+        <RefreshCw className="w-8 h-8 animate-spin text-emerald-500 mb-3" />
+        <p className="text-xs font-semibold text-slate-300">Təhlükəsiz maliyyə profili yoxlanılır...</p>
+      </div>
+    );
+  }
+
+  // 2. Authentication Gate: Must log in / register first before accessing the full app
+  if (!token || !user) {
+    return (
+      <LoginPage
+        onLoginSuccess={handleLoginSuccess}
+        language={language}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-slate-950">
@@ -347,6 +452,7 @@ export default function App() {
         }}
         onOpenProfile={() => setIsProfileOpen(true)}
         onQuickSync={handleQuickSync}
+        onLogout={handleLogout}
         isSyncing={isSyncing}
       />
 
@@ -493,6 +599,7 @@ export default function App() {
                   onContribute={handleContributeGoal}
                   onWithdraw={handleWithdrawGoal}
                   onRequestUnlock={handleRequestUnlock}
+                  onDeleteGoal={handleDeleteGoal}
                   language={language}
                 />
               </>
@@ -516,6 +623,7 @@ export default function App() {
                 onContribute={handleContributeGoal}
                 onWithdraw={handleWithdrawGoal}
                 onRequestUnlock={handleRequestUnlock}
+                onDeleteGoal={handleDeleteGoal}
                 language={language}
               />
             )}
@@ -532,7 +640,9 @@ export default function App() {
             )}
 
             {activeTab === 'reports' && (
-              <ReportsTab onExportCsv={handleExportCsv} language={language} />
+              <ErrorBoundary fallbackMessage="Hesabatlar bölməsində xəta baş verdi">
+                <ReportsTab onExportCsv={handleExportCsv} language={language} getHeaders={getHeaders} />
+              </ErrorBoundary>
             )}
           </div>
         )}
@@ -546,6 +656,7 @@ export default function App() {
         onUpdateProfile={handleUpdateProfile}
         onSwitchUser={handleSwitchUser}
         onResetDemo={handleResetDemo}
+        onLogout={handleLogout}
         language={language}
       />
     </div>

@@ -38,6 +38,16 @@ app.use(express.json());
 // Initialize / seed database
 seedDefaultData();
 
+// Helper to normalize Azerbaijani phone numbers
+const normalizePhone = (phone: string): string => {
+  let clean = phone.replace(/[^\d+]/g, '');
+  if (clean.startsWith('00994')) clean = '+' + clean.slice(2);
+  if (clean.startsWith('994')) clean = '+' + clean;
+  if (clean.startsWith('0')) clean = '+994' + clean.slice(1);
+  if (!clean.startsWith('+994')) clean = '+994' + clean;
+  return clean;
+};
+
 // Helper to extract authenticated user
 const authenticate = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
@@ -57,7 +67,7 @@ const authenticate = (req: Request, res: Response, next: NextFunction) => {
     }
   }
 
-  // Check demo user header for easy switching/dev access
+  // Check demo user header for testing/dev access
   const demoUserId = req.headers['x-user-id'] as string;
   if (demoUserId) {
     const user = db.users.find((u) => u.id === demoUserId);
@@ -67,20 +77,13 @@ const authenticate = (req: Request, res: Response, next: NextFunction) => {
     }
   }
 
-  // Fallback to default demo user if available
-  const defaultUser = db.users[0];
-  if (defaultUser) {
-    (req as any).user = defaultUser;
-    return next();
-  }
-
-  res.status(401).json({ error: 'İstifadəçi autentifikasiyadan keçməyib.' });
+  res.status(401).json({ error: 'İstifadəçi autentifikasiyadan keçməyib. Zəhmət olmasa daxil olun.' });
 };
 
 // Update streak on qualifying activity
 const recordUserActivity = (
   userId: string,
-  activityType: 'transaction' | 'savings_contribution' | 'financial_review',
+  activityType: 'transaction' | 'savings_contribution' | 'financial_review' | 'registration',
   db = readDb()
 ) => {
   let streak = db.streaks.find((s) => s.userId === userId);
@@ -138,47 +141,175 @@ const recordUserActivity = (
 };
 
 // ==========================================
-// AUTH & PROFILE ENDPOINTS
+// AUTH & SMS OTP ENDPOINTS
 // ==========================================
 
+// Send 6-digit SMS OTP with 5-minute expiry
+app.post('/api/auth/send-otp', (req: Request, res: Response) => {
+  const { phoneNumber } = req.body;
+  if (!phoneNumber) {
+    return res.status(400).json({ error: 'Mobil telefon nömrəsi daxil edilməlidir.' });
+  }
+
+  const cleanPhone = normalizePhone(phoneNumber);
+  if (cleanPhone.length < 13) {
+    return res.status(400).json({ error: 'Düzgün Azərbaycan mobil nömrəsi daxil edin (+994 XX XXX XX XX).' });
+  }
+
+  // 6-digit verification code
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString(); // 5 minutes validity
+
+  const db = readDb();
+  db.otps = db.otps || [];
+  // Remove older active OTPs for this phone
+  db.otps = db.otps.filter((o) => o.phoneNumber !== cleanPhone);
+
+  const otpRecord = {
+    id: 'otp_' + crypto.randomUUID(),
+    phoneNumber: cleanPhone,
+    code,
+    expiresAt,
+    verified: false,
+    createdAt: new Date().toISOString(),
+  };
+
+  db.otps.push(otpRecord);
+  saveDb(db);
+
+  // In production, integrate with SMS gateway (e.g. Azercell / Bakcell / Nar API or Twilio)
+  res.json({
+    success: true,
+    message: '5 dəqiqə keçərli olan birdəfəlik təsdiq kodu göndərildi.',
+    phoneNumber: cleanPhone,
+    codePreview: code,
+    expiresAt,
+    expiresInSeconds: 300,
+  });
+});
+
+// Verify SMS OTP
+app.post('/api/auth/verify-otp', (req: Request, res: Response) => {
+  const { phoneNumber, code } = req.body;
+  if (!phoneNumber || !code) {
+    return res.status(400).json({ error: 'Nömrə və təsdiq kodu tələb olunur.' });
+  }
+
+  const cleanPhone = normalizePhone(phoneNumber);
+  const db = readDb();
+  db.otps = db.otps || [];
+
+  const record = db.otps.find(
+    (o) => o.phoneNumber === cleanPhone && o.code === code.trim() && !o.verified
+  );
+
+  if (!record) {
+    return res.status(400).json({ error: 'Yanlış təsdiq kodu daxil edilib.' });
+  }
+
+  if (new Date(record.expiresAt).getTime() < Date.now()) {
+    return res.status(400).json({
+      error: 'Təsdiq kodunun 5 dəqiqəlik keçərlilik müddəti bitib. Zəhmət olmasa yeni kod tələb edin.',
+    });
+  }
+
+  record.verified = true;
+
+  // Check if an existing user matches this phone number
+  const existingUser = db.users.find((u) => u.phoneNumber === cleanPhone);
+
+  if (existingUser) {
+    existingUser.isPhoneVerified = true;
+    const token = 'tok_' + crypto.randomUUID();
+    db.sessions.push({
+      token,
+      userId: existingUser.id,
+      expiresAt: new Date(Date.now() + 30 * 86400000).toISOString(),
+    });
+    saveDb(db);
+
+    const { passwordHash: _, ...profile } = existingUser;
+    return res.json({
+      success: true,
+      verified: true,
+      token,
+      user: profile,
+      isExistingUser: true,
+      message: 'Uğurla daxil oldunuz.',
+    });
+  }
+
+  saveDb(db);
+  res.json({
+    success: true,
+    verified: true,
+    isExistingUser: false,
+    message: 'Nömrə təsdiqləndi! Qeydiyyatı tamamlaya bilərsiniz.',
+  });
+});
+
+// Register with Phone, FIN code, Name, Password
 app.post('/api/auth/register', (req: Request, res: Response) => {
-  const { email, password, displayName, preferredCurrency, openingBalance } = req.body;
-  if (!email || !password || !displayName) {
-    return res.status(400).json({ error: 'Email, şifrə və ad tələb olunur.' });
+  const { phoneNumber, finCode, displayName, password, email, openingBalance } = req.body;
+
+  if (!phoneNumber || !finCode || !displayName || !password) {
+    return res.status(400).json({
+      error: 'Mobil nömrə, FİN kod, ad-soyad və şifrə mütləq daxil edilməlidir.',
+    });
+  }
+
+  const cleanPhone = normalizePhone(phoneNumber);
+  const cleanFin = finCode.trim().toUpperCase();
+
+  // Validate FIN code (Azerbaijani ID FIN is exactly 7 characters alphanumeric)
+  if (!/^[A-Z0-9]{7}$/.test(cleanFin)) {
+    return res.status(400).json({
+      error: 'Şəxsiyyət vəsiqəsinin FİN kodu düz 7 simvoldan ibarət olmalıdır (məsələn: 5ABC123).',
+    });
   }
 
   const db = readDb();
-  if (db.users.find((u) => u.email.toLowerCase() === email.toLowerCase())) {
-    return res.status(409).json({ error: 'Bu email ilə qeydiyyatdan keçmiş istifadəçi artıq mövcuddur.' });
+
+  // Check for duplicates
+  if (db.users.find((u) => u.phoneNumber === cleanPhone)) {
+    return res.status(409).json({ error: 'Bu mobil nömrə ilə artıq qeydiyyatdan keçilib.' });
+  }
+  if (db.users.find((u) => u.finCode === cleanFin)) {
+    return res.status(409).json({ error: 'Bu FİN kod ilə artıq qeydiyyatdan keçilib.' });
   }
 
   const userId = 'user_' + crypto.randomUUID();
+  const now = new Date().toISOString();
+
   const newUser: UserRecord = {
     id: userId,
-    email: email.toLowerCase(),
-    displayName,
+    phoneNumber: cleanPhone,
+    finCode: cleanFin,
+    displayName: displayName.trim(),
+    email: email ? email.trim().toLowerCase() : `${cleanFin.toLowerCase()}@qenaet.az`,
     passwordHash: hashPassword(password),
-    preferredCurrency: preferredCurrency || 'AZN',
+    preferredCurrency: 'AZN',
     timeZone: 'Asia/Baku',
     openingBalance: Number(openingBalance) || 0,
+    isPhoneVerified: true,
     notificationPreferences: {
       dailyReminders: true,
       reminderTime: '20:00',
       milestoneAlerts: true,
       weeklySummary: true,
     },
-    createdAt: new Date().toISOString(),
+    createdAt: now,
   };
 
   db.users.push(newUser);
 
-  // Initialize streak
+  // Initialize empty streak
   db.streaks.push({
     userId,
-    currentStreak: 0,
-    longestStreak: 0,
-    lastActiveDate: null,
-    history: [],
+    currentStreak: 1,
+    longestStreak: 1,
+    lastActiveDate: now.slice(0, 10),
+    history: [{ date: now.slice(0, 10), activityType: 'registration' }],
   });
 
   // Create session
@@ -191,21 +322,32 @@ app.post('/api/auth/register', (req: Request, res: Response) => {
 
   saveDb(db);
 
-  const { passwordHash: _, ...userProfile } = newUser;
-  res.json({ token, user: userProfile });
+  const { passwordHash: _, ...profile } = newUser;
+  res.status(201).json({ token, user: profile });
 });
 
+// Login with Phone / FIN / Email and Password
 app.post('/api/auth/login', (req: Request, res: Response) => {
-  const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Email və şifrə daxil edilməlidir.' });
+  const { identifier, password } = req.body;
+  if (!identifier || !password) {
+    return res.status(400).json({ error: 'Giriş məlumatı (Nömrə, FİN və ya Email) və şifrə tələb olunur.' });
   }
 
   const db = readDb();
-  const user = db.users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+  const trimmed = identifier.trim();
+  const upperFin = trimmed.toUpperCase();
+  const cleanPhone = normalizePhone(trimmed);
+
+  // Look up by phone, FIN, or email
+  const user = db.users.find(
+    (u) =>
+      u.phoneNumber === cleanPhone ||
+      u.finCode === upperFin ||
+      u.email.toLowerCase() === trimmed.toLowerCase()
+  );
 
   if (!user || user.passwordHash !== hashPassword(password)) {
-    return res.status(401).json({ error: 'Yanlış email və ya şifrə.' });
+    return res.status(401).json({ error: 'Nömrə / FİN kod və ya şifrə yanlışdır.' });
   }
 
   const token = 'tok_' + crypto.randomUUID();
@@ -216,8 +358,28 @@ app.post('/api/auth/login', (req: Request, res: Response) => {
   });
   saveDb(db);
 
-  const { passwordHash: _, ...userProfile } = user;
-  res.json({ token, user: userProfile });
+  const { passwordHash: _, ...profile } = user;
+  res.json({ token, user: profile });
+});
+
+// Quick Demo Login (for instant evaluation or sample user access)
+app.post('/api/auth/demo-login', (req: Request, res: Response) => {
+  const db = readDb();
+  const user = db.users[0];
+  if (!user) {
+    return res.status(404).json({ error: 'Nümunə istifadəçi tapılmadı.' });
+  }
+
+  const token = 'tok_' + crypto.randomUUID();
+  db.sessions.push({
+    token,
+    userId: user.id,
+    expiresAt: new Date(Date.now() + 30 * 86400000).toISOString(),
+  });
+  saveDb(db);
+
+  const { passwordHash: _, ...profile } = user;
+  res.json({ token, user: profile });
 });
 
 app.get('/api/auth/me', authenticate, (req: Request, res: Response) => {
@@ -262,6 +424,32 @@ app.get('/api/auth/users-list', (req: Request, res: Response) => {
     openingBalance: u.openingBalance,
   }));
   res.json({ users: list });
+});
+
+app.post('/api/auth/switch-user', (req: Request, res: Response) => {
+  const { userId } = req.body;
+  const db = readDb();
+  const targetUser = db.users.find((u) => u.id === userId);
+  if (!targetUser) return res.status(404).json({ error: 'İstifadəçi tapılmadı.' });
+
+  const token = 'tok_' + crypto.randomUUID();
+  db.sessions.push({
+    token,
+    userId: targetUser.id,
+    expiresAt: new Date(Date.now() + 30 * 86400000).toISOString(),
+  });
+  saveDb(db);
+
+  const { passwordHash: _, ...profile } = targetUser;
+  res.json({ token, user: profile });
+});
+
+app.post('/api/reset-demo', (_req: Request, res: Response) => {
+  const db = readDb();
+  db.goals = [];
+  db.goal_contributions = [];
+  saveDb(db);
+  res.json({ success: true, message: 'Nümunə məlumatlar təmizləndi.' });
 });
 
 app.put('/api/profile', authenticate, (req: Request, res: Response) => {
@@ -1042,77 +1230,89 @@ app.get('/api/summary', authenticate, (req: Request, res: Response) => {
 });
 
 app.get('/api/reports/monthly', authenticate, (req: Request, res: Response) => {
-  const user = (req as any).user as UserRecord;
-  const db = readDb();
-  const userTxs = db.transactions.filter((tx) => tx.userId === user.id);
+  try {
+    const user = (req as any).user as UserRecord;
+    const db = readDb();
+    const userTxs = (db.transactions || []).filter((tx) => tx.userId === user.id);
 
-  const queryMonth = (req.query.month as string) || new Date().toISOString().slice(0, 7);
+    const nowStr = new Date().toISOString().slice(0, 7);
+    const rawMonth = (req.query.month as string) || nowStr;
+    const queryMonth = /^\d{4}-\d{2}$/.test(rawMonth) ? rawMonth : nowStr;
 
-  // Current selected month
-  const currentMonthTxs = filterTransactionsByMonth(userTxs, queryMonth);
-  const currentTotals = calculateTotals(currentMonthTxs);
+    // Current selected month
+    const currentMonthTxs = filterTransactionsByMonth(userTxs, queryMonth);
+    const currentTotals = calculateTotals(currentMonthTxs);
 
-  // Previous month calculation for comparison
-  const [yearStr, monthStr] = queryMonth.split('-');
-  const prevDate = new Date(Number(yearStr), Number(monthStr) - 2, 1);
-  const prevMonthStr = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}`;
-  const prevMonthTxs = filterTransactionsByMonth(userTxs, prevMonthStr);
-  const prevTotals = calculateTotals(prevMonthTxs);
+    // Previous month calculation for comparison
+    const [yearStr, monthStr] = queryMonth.split('-');
+    const prevDate = new Date(Number(yearStr), Number(monthStr) - 2, 1);
+    const prevMonthStr = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}`;
+    const prevMonthTxs = filterTransactionsByMonth(userTxs, prevMonthStr);
+    const prevTotals = calculateTotals(prevMonthTxs);
 
-  // Expense categories breakdown
-  const categoryMap: Record<string, number> = {};
-  for (const tx of currentMonthTxs) {
-    if (tx.type === 'expense') {
-      categoryMap[tx.category] = roundToCents((categoryMap[tx.category] || 0) + tx.amount);
+    // Expense categories breakdown
+    const categoryMap: Record<string, number> = {};
+    for (const tx of currentMonthTxs) {
+      if (tx.type === 'expense') {
+        categoryMap[tx.category] = roundToCents((categoryMap[tx.category] || 0) + tx.amount);
+      }
     }
+
+    const categoryBreakdown = Object.entries(categoryMap)
+      .map(([category, amount]) => ({
+        category,
+        amount,
+        percentage: currentTotals.expenses > 0 ? Math.round((amount / currentTotals.expenses) * 100) : 0,
+      }))
+      .sort((a, b) => b.amount - a.amount);
+
+    // Savings contributions in this month
+    const monthContributions = (db.goal_contributions || []).filter(
+      (gc) => gc.userId === user.id && gc.date && gc.date.startsWith(queryMonth) && gc.type === 'contribution'
+    );
+    const totalGoalSavingsThisMonth = roundToCents(
+      monthContributions.reduce((sum, gc) => sum + (gc.amount || 0), 0)
+    );
+
+    res.json({
+      month: queryMonth,
+      totals: currentTotals,
+      previousMonth: {
+        month: prevMonthStr,
+        totals: prevTotals,
+      },
+      difference: {
+        incomeChange: roundToCents(currentTotals.income - prevTotals.income),
+        expenseChange: roundToCents(currentTotals.expenses - prevTotals.expenses),
+        netCashFlowChange: roundToCents(currentTotals.netCashFlow - prevTotals.netCashFlow),
+      },
+      categoryBreakdown,
+      totalGoalSavingsThisMonth,
+    });
+  } catch (err: any) {
+    console.error('Error fetching monthly report:', err);
+    res.status(500).json({ error: 'Hesabatı hesablamaq mümkün olmadı.' });
   }
-
-  const categoryBreakdown = Object.entries(categoryMap)
-    .map(([category, amount]) => ({
-      category,
-      amount,
-      percentage: currentTotals.expenses > 0 ? Math.round((amount / currentTotals.expenses) * 100) : 0,
-    }))
-    .sort((a, b) => b.amount - a.amount);
-
-  // Savings contributions in this month
-  const monthContributions = db.goal_contributions.filter(
-    (gc) => gc.userId === user.id && gc.date.startsWith(queryMonth) && gc.type === 'contribution'
-  );
-  const totalGoalSavingsThisMonth = roundToCents(
-    monthContributions.reduce((sum, gc) => sum + gc.amount, 0)
-  );
-
-  res.json({
-    month: queryMonth,
-    totals: currentTotals,
-    previousMonth: {
-      month: prevMonthStr,
-      totals: prevTotals,
-    },
-    difference: {
-      incomeChange: roundToCents(currentTotals.income - prevTotals.income),
-      expenseChange: roundToCents(currentTotals.expenses - prevTotals.expenses),
-      netCashFlowChange: roundToCents(currentTotals.netCashFlow - prevTotals.netCashFlow),
-    },
-    categoryBreakdown,
-    totalGoalSavingsThisMonth,
-  });
 });
 
 app.get('/api/reports/export-csv', authenticate, (req: Request, res: Response) => {
-  const user = (req as any).user as UserRecord;
-  const db = readDb();
-  const userTxs = db.transactions.filter((tx) => tx.userId === user.id);
+  try {
+    const user = (req as any).user as UserRecord;
+    const db = readDb();
+    const userTxs = (db.transactions || []).filter((tx) => tx.userId === user.id);
 
-  let csv = 'ID,Tarix,Nov,Mebleg,Valyuta,Kateqoriya,Tesvir,Odenis_Metodu,Avtomatik_Idxal,Qeyd\n';
-  for (const tx of userTxs) {
-    csv += `"${tx.id}","${tx.date}","${tx.type}","${tx.amount}","AZN","${tx.category}","${tx.description.replace(/"/g, '""')}","${tx.paymentMethod}","${tx.isImported ? 'Bəli' : 'Xeyr'}","${(tx.note || '').replace(/"/g, '""')}"\n`;
+    let csv = 'ID,Tarix,Nov,Mebleg,Valyuta,Kateqoriya,Tesvir,Odenis_Metodu,Avtomatik_Idxal,Qeyd\n';
+    for (const tx of userTxs) {
+      csv += `"${tx.id}","${tx.date}","${tx.type}","${tx.amount}","AZN","${tx.category}","${(tx.description || '').replace(/"/g, '""')}","${tx.paymentMethod}","${tx.isImported ? 'Bəli' : 'Xeyr'}","${(tx.note || '').replace(/"/g, '""')}"\n`;
+    }
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="qenaet_emeliyyatlar.csv"');
+    res.send(csv);
+  } catch (err: any) {
+    console.error('Error exporting CSV:', err);
+    res.status(500).json({ error: 'CSV faylını hazırlamaq mümkün olmadı.' });
   }
-
-  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-  res.setHeader('Content-Disposition', 'attachment; filename="qenaet_emeliyyatlar.csv"');
-  res.send(csv);
 });
 
 // Reset database demo state

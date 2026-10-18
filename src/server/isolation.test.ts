@@ -8,11 +8,14 @@ test('Test 9: Security & Multi-User Isolation - User B cannot read or modify Use
       {
         id: 'user_A',
         email: 'userA@qenaet.az',
+        phoneNumber: '+994501111111',
+        finCode: '1AAAAAA',
         displayName: 'User A',
         passwordHash: 'hashA',
         preferredCurrency: 'AZN',
         timeZone: 'Asia/Baku',
         openingBalance: 500,
+        isPhoneVerified: true,
         notificationPreferences: {
           dailyReminders: true,
           reminderTime: '20:00',
@@ -24,11 +27,14 @@ test('Test 9: Security & Multi-User Isolation - User B cannot read or modify Use
       {
         id: 'user_B',
         email: 'userB@qenaet.az',
+        phoneNumber: '+994502222222',
+        finCode: '2BBBBBB',
         displayName: 'User B',
         passwordHash: 'hashB',
         preferredCurrency: 'AZN',
         timeZone: 'Asia/Baku',
         openingBalance: 100,
+        isPhoneVerified: true,
         notificationPreferences: {
           dailyReminders: false,
           reminderTime: '18:00',
@@ -42,6 +48,7 @@ test('Test 9: Security & Multi-User Isolation - User B cannot read or modify Use
       { token: 'tok_A', userId: 'user_A', expiresAt: '2026-12-31T00:00:00Z' },
       { token: 'tok_B', userId: 'user_B', expiresAt: '2026-12-31T00:00:00Z' },
     ],
+    otps: [],
     transactions: [
       {
         id: 'tx_A1',

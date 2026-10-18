@@ -19,6 +19,7 @@ import {
   Home,
   GraduationCap,
   Gift,
+  Trash2,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import type { Language } from '../i18n/translations.ts';
@@ -32,6 +33,7 @@ interface GoalsSectionProps {
   onContribute: (goalId: string, amount: number, note?: string) => Promise<void>;
   onWithdraw: (goalId: string, amount: number, note?: string) => Promise<void>;
   onRequestUnlock: (goalId: string) => Promise<void>;
+  onDeleteGoal: (goalId: string) => Promise<void>;
   language: Language;
 }
 
@@ -52,6 +54,7 @@ export const GoalsSection: React.FC<GoalsSectionProps> = ({
   onContribute,
   onWithdraw,
   onRequestUnlock,
+  onDeleteGoal,
   language,
 }) => {
   const t = (key: any) => getTranslation(key, language);
@@ -78,6 +81,8 @@ export const GoalsSection: React.FC<GoalsSectionProps> = ({
   const [newIsLocked, setNewIsLocked] = useState(false);
   const [newCoolingOff, setNewCoolingOff] = useState('30');
   const [formError, setFormError] = useState<string | null>(null);
+  const [goalToDelete, setGoalToDelete] = useState<SavingsGoal | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleOpenContribute = (goal: SavingsGoal) => {
     setSelectedGoalForAction(goal);
@@ -203,10 +208,29 @@ export const GoalsSection: React.FC<GoalsSectionProps> = ({
         </button>
       </div>
 
-      {/* Goals Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {goals.map((goal) => {
-          const rec = goal.recommendation;
+      {/* Goals Grid or Empty State */}
+      {goals.length === 0 ? (
+        <div className="p-8 sm:p-12 rounded-3xl bg-slate-900 border border-slate-800 text-center max-w-lg mx-auto shadow-xl">
+          <div className="w-14 h-14 mx-auto rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center mb-4 shadow-sm">
+            <Target className="w-7 h-7" />
+          </div>
+          <h3 className="text-base font-bold text-white mb-1.5">Hələ heç bir yığım hədəfi yoxdur</h3>
+          <p className="text-xs text-slate-400 leading-relaxed mb-6">
+            Yeni avtomobil, ev, təcili ehtiyat fondu və ya səyahət üçün şəxsi hədəfinizi təyin edin.
+            Ağıllı alqoritmimiz hər gün nə qədər yığmalı olduğunuzu avtomatik hesablayacaq.
+          </p>
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-md active:scale-95 inline-flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            <span>İlk Yığım Hədəfini Yarat</span>
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {goals.map((goal) => {
+            const rec = goal.recommendation;
           const percentage = Math.min(100, Math.round((goal.savedAmount / goal.targetAmount) * 100));
           const isCompleted = goal.status === 'completed' || percentage >= 100;
 
@@ -347,11 +371,19 @@ export const GoalsSection: React.FC<GoalsSectionProps> = ({
                 >
                   <History className="w-4 h-4" />
                 </button>
+                <button
+                  onClick={() => setGoalToDelete(goal)}
+                  title="Hədəfi Sil"
+                  className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
             </div>
           );
         })}
       </div>
+      )}
 
       {/* Contribute / Withdraw Modal */}
       {selectedGoalForAction && (actionType === 'contribute' || actionType === 'withdraw') && (
@@ -680,6 +712,59 @@ export const GoalsSection: React.FC<GoalsSectionProps> = ({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Goal Confirmation Modal */}
+      {goalToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl text-center">
+            <div className="w-12 h-12 mx-auto rounded-full bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center mb-3">
+              <Trash2 className="w-6 h-6" />
+            </div>
+            <h3 className="text-base font-bold text-white mb-1">
+              Yığım Hədəfini Sil
+            </h3>
+            <p className="text-xs text-slate-300 font-semibold mb-2">
+              "{goalToDelete.name}"
+            </p>
+            <p className="text-xs text-slate-400 mb-5 leading-relaxed">
+              Bu yığım hədəfini silmək istədiyinizə əminsiniz?
+              {goalToDelete.savedAmount > 0 && (
+                <span className="block mt-1 text-emerald-400 font-medium">
+                  Toplanmış {formatAZN(goalToDelete.savedAmount)} vəsait ümumi balansınıza qaytarılacaq.
+                </span>
+              )}
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={() => setGoalToDelete(null)}
+                className="flex-1 py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors"
+              >
+                Ləğv et
+              </button>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={async () => {
+                  try {
+                    setIsDeleting(true);
+                    await onDeleteGoal(goalToDelete.id);
+                    setGoalToDelete(null);
+                  } catch (err: any) {
+                    alert(err.message || 'Silinmədi');
+                  } finally {
+                    setIsDeleting(false);
+                  }
+                }}
+                className="flex-1 py-2 px-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-md shadow-rose-600/30 active:scale-95 transition-all flex items-center justify-center gap-1.5"
+              >
+                {isDeleting ? 'Silinir...' : 'Bəli, Sil'}
+              </button>
+            </div>
           </div>
         </div>
       )}

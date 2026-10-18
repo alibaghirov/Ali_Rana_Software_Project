@@ -114,17 +114,29 @@ export interface UserStreak {
 export interface UserProfile {
   id: string;
   email: string;
+  phoneNumber: string; // Azərbaycan mobil nömrəsi (+994)
+  finCode: string; // 7 simvollu şəxsiyyət vəsiqəsi FİN kodu
   displayName: string;
   preferredCurrency: string;
   timeZone: string;
   openingBalance: number;
   avatarUrl?: string;
+  isPhoneVerified: boolean;
   notificationPreferences: {
     dailyReminders: boolean;
     reminderTime: string; // HH:mm
     milestoneAlerts: boolean;
     weeklySummary: boolean;
   };
+  createdAt: string;
+}
+
+export interface OtpVerificationRecord {
+  id: string;
+  phoneNumber: string;
+  code: string;
+  expiresAt: string; // 5 dəqiqə keçərlilik
+  verified: boolean;
   createdAt: string;
 }
 

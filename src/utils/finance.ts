@@ -332,10 +332,11 @@ export const calculateUserLevel = (streak: number, completedGoalsCount: number =
 /**
  * Format currency with AZN symbol and standard Azerbaijani representation
  */
-export const formatAZN = (amount: number, locale: string = 'az-AZ'): string => {
+export const formatAZN = (amount: number | undefined | null, locale: string = 'az-AZ'): string => {
+  const safeAmount = typeof amount === 'number' && !isNaN(amount) ? amount : 0;
   const formatted = new Intl.NumberFormat(locale, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(amount);
+  }).format(safeAmount);
   return `${formatted} AZN`;
 };
