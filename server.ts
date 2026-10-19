@@ -36,9 +36,36 @@ import {
   getAiFinancialAdvice,
   parseTransactionWithAi,
 } from './src/server/gemini.ts';
+import {
+  metrics,
+  recordFailedLogin,
+  recordApiError,
+  recordAiFailure,
+  recordSlowResponse,
+  recordBankSyncFailure,
+  sendTelegramAlert,
+  getActiveTelegramChatId,
+  setCachedChatId,
+} from './src/server/monitoring.ts';
 
 const app = express();
 app.use(express.json());
+
+// Request latency & error monitoring middleware
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const start = Date.now();
+  metrics.totalRequestsTracked += 1;
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    if (duration > 3500 && !req.path.startsWith('/@') && !req.path.startsWith('/src')) {
+      recordSlowResponse(req.method + ' ' + req.path, duration);
+    }
+    if (res.statusCode >= 500) {
+      recordApiError(req.method + ' ' + req.path, `HTTP ${res.statusCode}`, res.statusCode);
+    }
+  });
+  next();
+});
 
 // Initialize / seed database
 seedDefaultData();
@@ -209,6 +236,7 @@ app.post('/api/auth/verify-otp', (req: Request, res: Response) => {
   );
 
   if (!record) {
+    recordFailedLogin(cleanPhone);
     return res.status(400).json({ error: 'Yanlış təsdiq kodu daxil edilib.' });
   }
 
@@ -352,6 +380,7 @@ app.post('/api/auth/login', (req: Request, res: Response) => {
   );
 
   if (!user || user.passwordHash !== hashPassword(password)) {
+    recordFailedLogin(trimmed);
     return res.status(401).json({ error: 'Nömrə / FİN kod və ya şifrə yanlışdır.' });
   }
 
@@ -1475,7 +1504,176 @@ app.post('/api/ai/quick-log', authenticate, async (req: Request, res: Response) 
     });
   } catch (err: any) {
     console.error('Error in AI quick log:', err);
+    recordAiFailure('gemini-3.8-flash', err?.message || 'Quick log failure');
     res.status(500).json({ error: 'Süni intellektlə qeyd etmək mümkün olmadı.' });
+  }
+});
+
+// ==========================================
+// SYSTEM MONITORING & TELEGRAM ALERTING APIS
+// ==========================================
+
+// Standard health check endpoint
+app.get('/api/health', (_req: Request, res: Response) => {
+  const uptimeSeconds = Math.floor((Date.now() - metrics.startTime) / 1000);
+  res.json({
+    status: 'healthy',
+    uptimeSeconds,
+    timestamp: new Date().toISOString(),
+    version: '1.2.0',
+    service: 'Qənaət Backend & Open Banking API',
+  });
+});
+
+// Get real-time monitoring status and telemetry
+app.get('/api/monitoring/status', async (_req: Request, res: Response) => {
+  const activeChatId = await getActiveTelegramChatId();
+  const botToken = process.env.TELEGRAM_BOT_TOKEN || '8808715727:AAEokHUNnA4uThzLdSYX56j3i6iOrk-Lv1M';
+  const maskedToken = botToken.length > 10 ? `${botToken.slice(0, 4)}...${botToken.slice(-4)}` : '***';
+
+  res.json({
+    active: true,
+    botUsername: 'QanaetBot',
+    botTokenConfigured: Boolean(botToken),
+    botTokenMasked: maskedToken,
+    chatId: activeChatId,
+    metrics: {
+      uptimeSeconds: Math.floor((Date.now() - metrics.startTime) / 1000),
+      totalRequestsTracked: metrics.totalRequestsTracked,
+      failedLoginsCount: metrics.failedLoginsCount,
+      recentApiErrors: metrics.recentApiErrors,
+      aiFailureCount: metrics.aiFailureCount,
+      slowRequestCount: metrics.slowRequestCount,
+      bankSyncFailures: metrics.bankSyncFailures,
+      alertsSentCount: metrics.alertsSentCount,
+      lastHealthCheck: metrics.lastHealthCheck,
+    },
+    rules: [
+      {
+        id: 'RULE-01',
+        name: 'Suspicious Logins / Brute-force',
+        condition: '5 failed login or OTP attempts within 5 minutes',
+        action: 'Immediate Critical Alert to Telegram + IP Rate Limit',
+      },
+      {
+        id: 'RULE-02',
+        name: 'Backend 5xx Error Spike',
+        condition: '3 server errors (500) within 2 minutes',
+        action: 'Critical Alert to Telegram with route & stack summary',
+      },
+      {
+        id: 'RULE-03',
+        name: 'Gemini AI Service Degradation',
+        condition: '3 consecutive AI failures or upstream 503/429 spikes',
+        action: 'Warning Alert to Telegram + Auto-fallback to offline rules',
+      },
+      {
+        id: 'RULE-04',
+        name: 'Slow Response Latency',
+        condition: '5 API responses take > 3500ms',
+        action: 'Performance Warning Alert to Telegram',
+      },
+      {
+        id: 'RULE-05',
+        name: 'Open Banking Sync Disruption',
+        condition: '3 consecutive failed bank syncs (Kapital, ABB, Pasha)',
+        action: 'Warning Alert to Telegram with affected bank identifier',
+      },
+    ],
+    recentLogs: metrics.recentLogs.slice(0, 25),
+  });
+});
+
+// Configure or update target Telegram Chat ID dynamically
+app.post('/api/monitoring/set-chat', (req: Request, res: Response) => {
+  const { chatId } = req.body;
+  if (!chatId || typeof chatId !== 'string' || chatId.trim().length === 0) {
+    return res.status(400).json({ error: 'Etibarlı Chat ID və ya Telegram kanal adı tələb olunur.' });
+  }
+
+  setCachedChatId(chatId.trim());
+  res.json({
+    success: true,
+    message: `Telegram Chat ID yeniləndi: ${chatId.trim()}`,
+    chatId: chatId.trim(),
+  });
+});
+
+// Trigger a test alert to verify Telegram bot delivery
+app.post('/api/monitoring/test-alert', async (req: Request, res: Response) => {
+  try {
+    const { type = 'test', customMessage, chatId } = req.body;
+    if (chatId) {
+      setCachedChatId(chatId);
+    }
+
+    let alertText = '';
+    const now = new Date().toUTCString();
+
+    switch (type) {
+      case 'security':
+        alertText = [
+          `🚨 *[ALERT] Security: Test Brute-Force Alert*`,
+          `• *Simulated Event:* 5 failed login attempts detected.`,
+          `• *Identifier:* \`+99450***1234\``,
+          `• *System:* Qənaət Personal Finance Platform`,
+          `• *Time:* ${now}`,
+          `• *Status:* Verification Test Successful`,
+        ].join('\n');
+        break;
+
+      case 'api_error':
+        alertText = [
+          `🚨 *[ALERT] Backend Health: Test 5xx Error Alert*`,
+          `• *Simulated Event:* High API error rate threshold exceeded.`,
+          `• *Route:* \`POST /api/transactions\``,
+          `• *Time:* ${now}`,
+          `• *Status:* Verification Test Successful`,
+        ].join('\n');
+        break;
+
+      case 'ai_service':
+        alertText = [
+          `⚠️ *[WARNING] AI Service: Test Gemini Downtime Alert*`,
+          `• *Simulated Event:* Upstream model latency spike (503).`,
+          `• *Model:* \`gemini-3.8-flash\``,
+          `• *Mitigation:* Resilient fallback heuristics active.`,
+          `• *Time:* ${now}`,
+        ].join('\n');
+        break;
+
+      case 'custom':
+        alertText = `🔔 *[Qənaət Monitorinq]*\n${customMessage || 'Test Bildirişi'}\n• *Vaxt:* ${now}`;
+        break;
+
+      default:
+        alertText = [
+          `✅ *[TEST] Qənaət Sistemi Monitorinq & Telegram Bot Aktivdir!*`,
+          `• *Bot:* @QanaetBot (ID: 8808715727)`,
+          `• *Status:* Bütün monitorinq qaydaları (Təhlükəsizlik, 5xx Xətalar, AI Xidmətləri, Latency) aktivdir.`,
+          `• *Vaxt:* ${now}`,
+        ].join('\n');
+        break;
+    }
+
+    const result = await sendTelegramAlert(alertText, chatId);
+    if (!result.success) {
+      return res.status(400).json({
+        success: false,
+        error: result.error || 'Telegram mesajını göndərmək mümkün olmadı.',
+        chatId: result.chatId,
+        hint: 'Telegram-da @QanaetBot botuna /start göndərin və ya Telegram kanalınızın/qrupunuzun Chat ID-sini daxil edin.',
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Telegram bildirişi uğurla çatdırıldı!',
+      chatId: result.chatId,
+    });
+  } catch (err: any) {
+    console.error('Error dispatching test alert:', err);
+    res.status(500).json({ error: err?.message || 'Server xətası' });
   }
 });
 

@@ -15,6 +15,7 @@ import {
   PiggyBank,
   RefreshCw,
   Sparkles,
+  Activity,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Header } from './components/Header.tsx';
@@ -27,6 +28,7 @@ import { TransactionsTab } from './components/TransactionsTab.tsx';
 import { BankIntegrationTab } from './components/BankIntegrationTab.tsx';
 import { ReportsTab } from './components/ReportsTab.tsx';
 import { AiAdvisorTab } from './components/AiAdvisorTab.tsx';
+import { MonitoringTab } from './components/MonitoringTab.tsx';
 import { ProfileModal } from './components/ProfileModal.tsx';
 import { LoginPage } from './components/LoginPage.tsx';
 import { ErrorBoundary } from './components/ErrorBoundary.tsx';
@@ -40,7 +42,7 @@ import type {
   FinancialSummary,
 } from './types/finance.ts';
 
-type ActiveTab = 'dashboard' | 'transactions' | 'goals' | 'banks' | 'reports' | 'ai';
+type ActiveTab = 'dashboard' | 'transactions' | 'goals' | 'banks' | 'reports' | 'ai' | 'monitoring';
 
 export default function App() {
   const [language, setLanguage] = useState<Language>('az');
@@ -545,6 +547,21 @@ export default function App() {
                 Gemini
               </span>
             </button>
+
+            <button
+              onClick={() => setActiveTab('monitoring')}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+                activeTab === 'monitoring'
+                  ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30 shadow-sm shadow-amber-500/10'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+              }`}
+            >
+              <Activity className="w-4 h-4 text-amber-400" />
+              <span>Monitorinq & Alertlər</span>
+              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-300 font-bold font-mono">
+                Telegram
+              </span>
+            </button>
           </div>
         </div>
       </nav>
@@ -674,6 +691,12 @@ export default function App() {
                   monthlyIncome={summary?.monthlyIncome}
                   monthlyExpenses={summary?.monthlyExpenses}
                 />
+              </ErrorBoundary>
+            )}
+
+            {activeTab === 'monitoring' && (
+              <ErrorBoundary fallbackMessage="Monitorinq bölməsində xəta baş verdi">
+                <MonitoringTab />
               </ErrorBoundary>
             )}
           </div>
