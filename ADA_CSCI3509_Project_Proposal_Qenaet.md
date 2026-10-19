@@ -17,10 +17,10 @@
 
 ### Team Members & Contributions
 
-| Team Member | Contribution to the homework / project |
-| :--- | :--- |
-| **Ali Baghirov** | System architecture, full-stack development, database schema design, Open Banking mock integration, OTP authentication flow, smart daily savings algorithm, and financial comparative reporting engine. |
-| **\<Student Name 2\>** | Requirements elicitation, frontend UI/UX design with Tailwind CSS, Telegram monitoring & alerting bot integration, and QA test plan documentation. |
+| Team Member | Role | Contribution to the Homework / Project |
+| :--- | :--- | :--- |
+| **Ali Baghirov** | **Lead System Architect & Core Full-Stack Engineer** *(Advanced Contribution)* | • **System Architecture & Backend:** Designed and implemented the complete Express.js & TypeScript REST backend, authentication engine (password hashing, rate-limited OTP verification), and relational database store with ACID compliance.<br>• **Core Algorithms:** Engineered the smart dynamic daily savings calculation engine and the behavioral cooling-off lock mechanism for goal withdrawals.<br>• **Open Banking & AI Pipelines:** Developed the multi-bank mock integration (ABB, Kapital Bank, Pasha Bank, Leobank) with automated transaction deduplication, and integrated Gemini AI with offline heuristic fallbacks.<br>• **Monitoring & Alerting Engine:** Built the autonomous background monitoring daemon (`src/server/monitoring.ts`), telemetry request interceptors, real-time threshold rule evaluator (5 failed logins/3m, 5xx rate spikes, AI 503 fallback, API latency breaches), and secure asynchronous Telegram Bot API push dispatch pipeline. |
+| **Rana Rustamli** | **UI/UX Designer & Frontend QA Specialist** *(Supporting Contribution)* | • **Requirements & Specifications:** Formulated the functional requirements (FR-01 to FR-13) and MoSCoW prioritization matrix for the project proposal.<br>• **Frontend UI/UX Design:** Implemented responsive React components, modern fintech dark mode layout using Tailwind CSS, financial question cards, transaction filter modals, and data visualizers.<br>• **Telegram Bot Setup & Alert Templates:** Created and configured `@QanaetBot` via Telegram BotFather, configured chat ID parameters, and drafted standardized Markdown alert message templates.<br>• **Monitoring UI Integration:** Built the frontend Monitoring and Alerting dashboard (`MonitoringTab.tsx`) with real-time status counters, alert test trigger buttons, and event log views.<br>• **Quality Assurance & Testing:** Formulated manual QA test suites, executed brute-force simulation tests, verified Telegram push notification delivery, and authored system verification documentation. |
 
 ---
 

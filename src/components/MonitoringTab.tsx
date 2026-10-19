@@ -16,6 +16,8 @@ import {
   Check,
   Radio,
   Sparkles,
+  Users,
+  Award,
 } from 'lucide-react';
 
 interface MonitoringMetrics {
@@ -644,6 +646,75 @@ Monitoring & Alerting Table:
             <p className="text-slate-400 leading-relaxed">
               Telegram Bot Tokeni (<code className="text-emerald-400 bg-slate-900 px-1.5 py-0.5 rounded">8808715727:AAEokHUNnA4uThzLdSYX56j3i6iOrk-Lv1M</code>) heç vaxt frontend koduna və ya Git deposuna daxil edilmir. O, sırf server mühit dəyişənlərində (<code className="text-emerald-400 bg-slate-900 px-1.5 py-0.5 rounded">.env / process.env.TELEGRAM_BOT_TOKEN</code>) saxlanılır. Bütün xəbərdarlıqlar server tərəfindən idarə olunan arxa plan vasitəsilə təhlükəsiz göndərilir.
             </p>
+          </div>
+        </div>
+
+        {/* Course Team Members & Contributions Section */}
+        <div className="mt-6 p-5 rounded-2xl bg-slate-950/80 border border-slate-800">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2.5">
+              <span className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                <Users className="w-4 h-4" />
+              </span>
+              <div>
+                <h4 className="font-bold text-sm text-white flex items-center gap-2">
+                  <span>Komanda Üzvləri və Fərdi Töhfələr</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-mono">
+                    CSCI 3509
+                  </span>
+                </h4>
+                <p className="text-[11px] text-slate-400">
+                  Layihə üzrə iş bölgüsü və fərdi töhfələrin rəsmi fənn hesabatı bölgüsü.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Ali Baghirov - Advanced Contribution */}
+            <div className="p-4 rounded-xl bg-slate-900/90 border border-indigo-500/30 relative overflow-hidden group hover:border-indigo-500/60 transition-colors">
+              <div className="absolute top-0 right-0 px-2.5 py-0.5 bg-indigo-500/20 border-b border-l border-indigo-500/40 rounded-bl-lg text-[10px] font-bold text-indigo-300 flex items-center gap-1">
+                <Award className="w-3 h-3 text-indigo-400" />
+                <span>Aparıcı Mühəndis (Advanced)</span>
+              </div>
+              <div className="flex items-center gap-2.5 mb-2.5">
+                <div className="w-8 h-8 rounded-full bg-indigo-500/20 text-indigo-300 font-bold flex items-center justify-center text-xs border border-indigo-500/30">
+                  AB
+                </div>
+                <div>
+                  <h5 className="font-bold text-white text-xs">Əli Bağırov (Ali Baghirov)</h5>
+                  <p className="text-[10px] text-indigo-400">Lead System Architect & Core Full-Stack Engineer</p>
+                </div>
+              </div>
+              <ul className="text-[11px] text-slate-300 space-y-1.5 list-disc list-inside">
+                <li><strong className="text-white">Sistem Memarlığı & Backend:</strong> Express.js və TypeScript əsaslı REST arxitekturası, autentifikasiya və şifrələmə sistemləri.</li>
+                <li><strong className="text-white">Alqoritmik Həllər:</strong> Dinamik gündəlik qənaət kvotası mühərriki və psixoloji gözləmə müddətli smart-lock alqoritmi.</li>
+                <li><strong className="text-white">Monitorinq & Alerting Sistemi:</strong> Serverdə telemetriya interceptorları, xəta tezliyi və gecikmə izləyicisi, Telegram Bot API ilə asinxron alert çatdırma mühərriki.</li>
+                <li><strong className="text-white">Açıq Bankçılıq & AI:</strong> Çoxbanklı (ABB, Kapital, Pasha, Leobank) sinxronizasiya və Gemini AI inteqrasiyası.</li>
+              </ul>
+            </div>
+
+            {/* Rana Rustamli - Supporting Contribution */}
+            <div className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 relative overflow-hidden group hover:border-slate-700 transition-colors">
+              <div className="absolute top-0 right-0 px-2.5 py-0.5 bg-slate-800 border-b border-l border-slate-700 rounded-bl-lg text-[10px] font-semibold text-slate-300">
+                Dəstəkləyici (Supporting)
+              </div>
+              <div className="flex items-center gap-2.5 mb-2.5">
+                <div className="w-8 h-8 rounded-full bg-slate-800 text-slate-300 font-bold flex items-center justify-center text-xs border border-slate-700">
+                  RR
+                </div>
+                <div>
+                  <h5 className="font-bold text-white text-xs">Rəna Rüstəmli (Rana Rustamli)</h5>
+                  <p className="text-[10px] text-slate-400">UI/UX Designer & Frontend QA Specialist</p>
+                </div>
+              </div>
+              <ul className="text-[11px] text-slate-300 space-y-1.5 list-disc list-inside">
+                <li><strong className="text-white">Tələblərin Spesifikasiyası:</strong> Funksional tələblər (FR-01 – FR-13) və MoSCoW prioritetləşdirmə cədvəlinin hazırlanması.</li>
+                <li><strong className="text-white">Frontend UI/UX Tərtibatı:</strong> React və Tailwind CSS komponentləri, kartlar, qaranlıq rejim qrafik dizaynı.</li>
+                <li><strong className="text-white">Telegram Bot Qurulması:</strong> Telegram BotFather vasitəsilə @QanaetBot token konfiqurasiyası və alert şablon mətni.</li>
+                <li><strong className="text-white">Monitorinq Paneli & QA Testləri:</strong> İstifadəçi interfeysində test simulyasiya paneli və Telegram bildirişlərinin manual yoxlanışı.</li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>

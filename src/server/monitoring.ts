@@ -59,39 +59,46 @@ const pushLog = (
 };
 
 /**
- * Fetch latest chat ID from Telegram Bot getUpdates if not specified in env
+ * Fetch all active chat IDs from env and Telegram Bot getUpdates
  */
-export const getActiveTelegramChatId = async (): Promise<string | null> => {
+export const getAllActiveTelegramChatIds = async (): Promise<string[]> => {
+  const ids = new Set<string>();
+
   if (process.env.TELEGRAM_CHAT_ID && process.env.TELEGRAM_CHAT_ID.trim().length > 0) {
-    return process.env.TELEGRAM_CHAT_ID.trim();
+    process.env.TELEGRAM_CHAT_ID.split(',').forEach((s) => {
+      const trimmed = s.trim();
+      if (trimmed) ids.add(trimmed);
+    });
   }
+
   if (cachedChatId) {
-    return cachedChatId;
+    ids.add(cachedChatId);
   }
 
   const token = process.env.TELEGRAM_BOT_TOKEN || DEFAULT_BOT_TOKEN;
   try {
-    const res = await fetch(`https://api.telegram.org/bot${token}/getUpdates?limit=5`);
+    const res = await fetch(`https://api.telegram.org/bot${token}/getUpdates?limit=25`);
     if (res.ok) {
       const data = (await res.json()) as any;
       if (data.ok && Array.isArray(data.result) && data.result.length > 0) {
-        // Find most recent message or channel post with chat.id
-        for (let i = data.result.length - 1; i >= 0; i--) {
-          const update = data.result[i];
+        for (const update of data.result) {
           const chat = update.message?.chat || update.channel_post?.chat || update.my_chat_member?.chat;
           if (chat && chat.id) {
-            cachedChatId = String(chat.id);
-            console.log(`[MONITORING] Auto-discovered Telegram Chat ID from updates: ${cachedChatId}`);
-            return cachedChatId;
+            ids.add(String(chat.id));
           }
         }
       }
     }
   } catch (err) {
-    console.warn('[MONITORING] Error auto-detecting Telegram Chat ID:', err);
+    console.warn('[MONITORING] Error discovering Telegram chat IDs from getUpdates:', err);
   }
 
-  return null;
+  return Array.from(ids);
+};
+
+export const getActiveTelegramChatId = async (): Promise<string | null> => {
+  const all = await getAllActiveTelegramChatIds();
+  return all.length > 0 ? all[0] : null;
 };
 
 /**
@@ -102,51 +109,60 @@ export const setCachedChatId = (chatId: string) => {
 };
 
 /**
- * Sends an automated alert to the team's Telegram channel via Telegram Bot API
+ * Sends an automated alert to the team's Telegram channel(s) via Telegram Bot API
  */
 export const sendTelegramAlert = async (
   message: string,
   targetChatId?: string
 ): Promise<{ success: boolean; error?: string; chatId?: string }> => {
   const token = process.env.TELEGRAM_BOT_TOKEN || DEFAULT_BOT_TOKEN;
-  const chatId = targetChatId || (await getActiveTelegramChatId());
+  const targetIds = targetChatId ? [targetChatId] : await getAllActiveTelegramChatIds();
 
-  if (!chatId) {
+  if (targetIds.length === 0) {
     const fallbackNote = 'Chat ID not found yet. (Send /start to @QanaetBot or set TELEGRAM_CHAT_ID)';
     console.warn(`[MONITORING LOG] ${message} | Notice: ${fallbackNote}`);
     pushLog('WARNING', 'SYSTEM', message, false, fallbackNote);
     return { success: false, error: fallbackNote };
   }
 
-  try {
-    const url = `https://api.telegram.org/bot${token}/sendMessage`;
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: message,
-        parse_mode: 'Markdown',
-      }),
-    });
+  let anySuccess = false;
+  let lastError: string | undefined;
 
-    const resData = (await res.json()) as any;
+  for (const chatId of targetIds) {
+    try {
+      const url = `https://api.telegram.org/bot${token}/sendMessage`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: message,
+          parse_mode: 'Markdown',
+        }),
+      });
 
-    if (!res.ok || !resData.ok) {
-      const errorText = resData.description || 'Failed to dispatch Telegram alert';
-      console.error('[MONITORING] Telegram API error:', errorText);
-      pushLog('CRITICAL', 'SYSTEM', message, false, errorText);
-      return { success: false, error: errorText, chatId };
+      const resData = (await res.json()) as any;
+
+      if (!res.ok || !resData.ok) {
+        lastError = resData.description || 'Failed to dispatch Telegram alert';
+        console.error(`[MONITORING] Telegram API error for chat ${chatId}:`, lastError);
+      } else {
+        anySuccess = true;
+        console.log(`[MONITORING] Telegram alert delivered successfully to chat ${chatId}`);
+      }
+    } catch (err: any) {
+      lastError = err?.message || 'Network error';
+      console.error(`[MONITORING] Network exception dispatching Telegram alert to chat ${chatId}:`, err);
     }
+  }
 
+  if (anySuccess) {
     metrics.alertsSentCount += 1;
-    pushLog('INFO', 'SYSTEM', message, true, 'Delivered to Telegram');
-    console.log(`[MONITORING] Telegram alert delivered successfully to chat ${chatId}`);
-    return { success: true, chatId };
-  } catch (err: any) {
-    console.error('[MONITORING] Network exception dispatching Telegram alert:', err);
-    pushLog('CRITICAL', 'SYSTEM', message, false, err?.message || 'Network error');
-    return { success: false, error: err?.message || 'Network error' };
+    pushLog('INFO', 'SYSTEM', message, true, `Delivered to Telegram (${targetIds.join(', ')})`);
+    return { success: true, chatId: targetIds.join(', ') };
+  } else {
+    pushLog('CRITICAL', 'SYSTEM', message, false, lastError || 'Failed to dispatch');
+    return { success: false, error: lastError };
   }
 };
 
