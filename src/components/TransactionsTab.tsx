@@ -26,6 +26,7 @@ interface TransactionsTabProps {
   onDeleteTransaction: (id: string) => Promise<void>;
   onExportCsv: () => void;
   language: Language;
+  getHeaders?: () => Record<string, string>;
 }
 
 const CATEGORY_NAMES_AZ: Record<string, string> = {
@@ -55,6 +56,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
   onDeleteTransaction,
   onExportCsv,
   language,
+  getHeaders,
 }) => {
   const t = (key: any) => getTranslation(key, language);
 
@@ -67,6 +69,12 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
+
+  // AI Quick Parse modal state
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+  const [aiText, setAiText] = useState('');
+  const [isAiParsing, setIsAiParsing] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   // Form fields
   const [txType, setTxType] = useState<TransactionType>('expense');
@@ -177,6 +185,41 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
     }
   };
 
+  const handleAiParse = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!aiText.trim() || isAiParsing) return;
+    setIsAiParsing(true);
+    setAiError(null);
+    try {
+      const headers = getHeaders ? getHeaders() : { 'Content-Type': 'application/json' };
+      const res = await fetch('/api/ai/parse-transaction', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ text: aiText.trim() }),
+      });
+      if (!res.ok) throw new Error('AI mətni təhlil edə bilmədi.');
+      const data = await res.json();
+      const p = data.transaction;
+      if (p) {
+        setTxType(p.type || 'expense');
+        setTxAmount(p.amount ? p.amount.toString() : '');
+        setTxDate(p.date || new Date().toISOString().slice(0, 10));
+        setTxCategory((p.category as Category) || (p.type === 'income' ? 'salary' : 'food'));
+        setTxDescription(p.description || aiText.trim());
+        setTxPaymentMethod((p.paymentMethod as PaymentMethod) || 'card');
+        setTxNote(`AI ilə daxil edildi: "${aiText.slice(0, 60)}"`);
+        setTxIsRecurring(false);
+        setIsAiModalOpen(false);
+        setEditingTx(null);
+        setIsModalOpen(true);
+      }
+    } catch (err: any) {
+      setAiError(err.message || 'Xəta baş verdi');
+    } finally {
+      setIsAiParsing(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       {/* Top Header & Actions */}
@@ -188,7 +231,18 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => {
+              setAiText('');
+              setAiError(null);
+              setIsAiModalOpen(true);
+            }}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-bold transition-all shadow-md shadow-indigo-600/25 active:scale-95"
+          >
+            <Sparkles className="w-4 h-4 text-amber-300 animate-pulse" />
+            <span>AI ilə Sürətli Qeyd</span>
+          </button>
           <button
             onClick={onExportCsv}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-colors shadow-sm"
@@ -539,6 +593,93 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                   className="px-5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md active:scale-95 transition-all"
                 >
                   Yadda saxla
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* AI Quick Add Modal */}
+      {isAiModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-slate-900 border border-indigo-500/30 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-indigo-500/20 text-indigo-400">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-white">Süni İntellektlə Əməliyyat Qeydi</h3>
+                  <p className="text-xs text-slate-400">
+                    Azərbaycan dilində sərbəst cümlə yazın (Gemini avtomatik tanıyacaq)
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsAiModalOpen(false)}
+                className="text-slate-400 hover:text-white text-lg font-bold p-1"
+              >
+                ✕
+              </button>
+            </div>
+
+            {aiError && (
+              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs">
+                {aiError}
+              </div>
+            )}
+
+            <form onSubmit={handleAiParse} className="space-y-4">
+              <div>
+                <textarea
+                  value={aiText}
+                  onChange={(e) => setAiText(e.target.value)}
+                  placeholder="məs: Dünən Bravo-da 45 manat kartla ərzaq aldım"
+                  rows={3}
+                  className="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-2xl p-3.5 text-sm text-white placeholder-slate-500 outline-none transition-all resize-none"
+                  autoFocus
+                />
+              </div>
+
+              <div>
+                <span className="text-xs text-slate-400 block mb-1.5 font-medium">
+                  Nümunə cümlələrə klikləyin:
+                </span>
+                <div className="space-y-1">
+                  {[
+                    'Dünən Bravo-da 38.50 AZN kartla bazarlıq etdim',
+                    'Bolt taksiyə 5.20 AZN nağd verdim',
+                    'Maaş kartıma 1400 AZN köçürüldü',
+                    'Kommunal işıq pulu 28 AZN ödədim',
+                  ].map((s, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setAiText(s)}
+                      className="text-left w-full text-xs text-slate-300 hover:text-indigo-300 hover:bg-slate-800 p-2 rounded-lg border border-slate-800/80 transition-colors"
+                    >
+                      "{s}"
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setIsAiModalOpen(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white"
+                >
+                  Ləğv et
+                </button>
+                <button
+                  type="submit"
+                  disabled={!aiText.trim() || isAiParsing}
+                  className="px-5 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:opacity-50 text-white shadow-md transition-all flex items-center gap-2"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>{isAiParsing ? 'Təhlil edilir...' : 'Təhlil Et və Formaya Köçür'}</span>
                 </button>
               </div>
             </form>

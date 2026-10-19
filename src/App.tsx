@@ -14,6 +14,7 @@ import {
   MinusCircle,
   PiggyBank,
   RefreshCw,
+  Sparkles,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Header } from './components/Header.tsx';
@@ -25,6 +26,7 @@ import { GamificationCard } from './components/GamificationCard.tsx';
 import { TransactionsTab } from './components/TransactionsTab.tsx';
 import { BankIntegrationTab } from './components/BankIntegrationTab.tsx';
 import { ReportsTab } from './components/ReportsTab.tsx';
+import { AiAdvisorTab } from './components/AiAdvisorTab.tsx';
 import { ProfileModal } from './components/ProfileModal.tsx';
 import { LoginPage } from './components/LoginPage.tsx';
 import { ErrorBoundary } from './components/ErrorBoundary.tsx';
@@ -38,7 +40,7 @@ import type {
   FinancialSummary,
 } from './types/finance.ts';
 
-type ActiveTab = 'dashboard' | 'transactions' | 'goals' | 'banks' | 'reports';
+type ActiveTab = 'dashboard' | 'transactions' | 'goals' | 'banks' | 'reports' | 'ai';
 
 export default function App() {
   const [language, setLanguage] = useState<Language>('az');
@@ -528,6 +530,21 @@ export default function App() {
               <FileBarChart className="w-4 h-4" />
               <span>{t('reports')}</span>
             </button>
+
+            <button
+              onClick={() => setActiveTab('ai')}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+                activeTab === 'ai'
+                  ? 'bg-gradient-to-r from-indigo-500/25 to-purple-500/25 text-indigo-300 border border-indigo-500/40 shadow-sm shadow-indigo-500/10'
+                  : 'text-indigo-400/90 hover:text-indigo-200 hover:bg-indigo-950/40 border border-transparent'
+              }`}
+            >
+              <Sparkles className="w-4 h-4 text-indigo-400 animate-pulse" />
+              <span>AI Məsləhətçi</span>
+              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-indigo-500/20 text-indigo-300 font-bold font-mono">
+                Gemini
+              </span>
+            </button>
           </div>
         </div>
       </nav>
@@ -565,6 +582,7 @@ export default function App() {
                   onOpenContributeModal={(goal) => {
                     setActiveTab('goals');
                   }}
+                  onOpenAiAdvisor={() => setActiveTab('ai')}
                   language={language}
                 />
 
@@ -613,6 +631,7 @@ export default function App() {
                 onDeleteTransaction={handleDeleteTransaction}
                 onExportCsv={handleExportCsv}
                 language={language}
+                getHeaders={getHeaders}
               />
             )}
 
@@ -642,6 +661,19 @@ export default function App() {
             {activeTab === 'reports' && (
               <ErrorBoundary fallbackMessage="Hesabatlar bölməsində xəta baş verdi">
                 <ReportsTab onExportCsv={handleExportCsv} language={language} getHeaders={getHeaders} />
+              </ErrorBoundary>
+            )}
+
+            {activeTab === 'ai' && (
+              <ErrorBoundary fallbackMessage="AI Məsləhətçi bölməsində xəta baş verdi">
+                <AiAdvisorTab
+                  language={language}
+                  getHeaders={getHeaders}
+                  onTransactionAdded={loadData}
+                  userBalance={summary?.totalBalance}
+                  monthlyIncome={summary?.monthlyIncome}
+                  monthlyExpenses={summary?.monthlyExpenses}
+                />
               </ErrorBoundary>
             )}
           </div>

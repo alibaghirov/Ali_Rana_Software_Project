@@ -8,12 +8,14 @@ import type { SavingsGoal } from '../types/finance.ts';
 interface DailyRecommendationBannerProps {
   goals: (SavingsGoal & { hasContributedToday?: boolean; recommendation?: any })[];
   onOpenContributeModal: (goal: SavingsGoal) => void;
+  onOpenAiAdvisor?: () => void;
   language: Language;
 }
 
 export const DailyRecommendationBanner: React.FC<DailyRecommendationBannerProps> = ({
   goals,
   onOpenContributeModal,
+  onOpenAiAdvisor,
   language,
 }) => {
   const t = (key: any) => getTranslation(key, language);
@@ -72,7 +74,16 @@ export const DailyRecommendationBanner: React.FC<DailyRecommendationBannerProps>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 self-end md:self-auto shrink-0">
+        <div className="flex flex-wrap items-center gap-2.5 self-end md:self-auto shrink-0">
+          {onOpenAiAdvisor && (
+            <button
+              onClick={onOpenAiAdvisor}
+              className="px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-md active:scale-95 flex items-center gap-1.5 bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 border border-indigo-500/40"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+              <span>AI Təhlili Al</span>
+            </button>
+          )}
           <button
             onClick={() => onOpenContributeModal(pendingGoal)}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md active:scale-95 flex items-center gap-2 ${

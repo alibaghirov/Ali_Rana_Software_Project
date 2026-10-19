@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express, { Request, Response, NextFunction } from 'express';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -31,6 +32,10 @@ import type {
   BankConnection,
   Category,
 } from './src/types/finance.ts';
+import {
+  getAiFinancialAdvice,
+  parseTransactionWithAi,
+} from './src/server/gemini.ts';
 
 const app = express();
 app.use(express.json());
@@ -1323,6 +1328,155 @@ app.post('/api/reset-demo', (req: Request, res: Response) => {
   }
   seedDefaultData();
   res.json({ success: true, message: 'Nümunə məlumatlar ilkin vəziyyətinə qaytarıldı.' });
+});
+
+// ==========================================
+// GEMINI AI INTEGRATION & SMART ADVISOR
+// ==========================================
+
+// Check AI status
+app.get('/api/ai/status', (_req: Request, res: Response) => {
+  const hasKey = Boolean(process.env.GEMINI_API_KEY || 'AQ.Ab8RN6IwFUsSJJXxmEI_ZZ_DHguVz4oz40j7xzavgebZNQKofw');
+  res.json({
+    active: true,
+    hasApiKey: hasKey,
+    model: 'gemini-3.8-flash',
+    features: [
+      'Personalized Financial Advisory & Goal Analysis',
+      'Natural Language Transaction Parser (Azərbaycan dili)',
+      'Automated Spending Pattern Anomaly Detection',
+      'Daily Savings Optimization Plan',
+    ],
+  });
+});
+
+// Get personalized AI financial advice
+app.post('/api/ai/advice', authenticate, async (req: Request, res: Response) => {
+  try {
+    const user = (req as any).user as UserRecord;
+    const { question } = req.body;
+    const db = readDb();
+
+    const userTxs = (db.transactions || []).filter((tx) => tx.userId === user.id);
+    const userGoals = (db.goals || []).filter((g) => g.userId === user.id);
+    const streak = (db.streaks || []).find((s) => s.userId === user.id);
+
+    const nowStr = new Date().toISOString().slice(0, 7);
+    const monthlyTxs = filterTransactionsByMonth(userTxs, nowStr);
+    const monthlyTotals = calculateTotals(monthlyTxs);
+    const allTotals = calculateTotals(userTxs);
+    const totalBalance = calculateTotalBalance(user.openingBalance, allTotals.income, allTotals.expenses);
+
+    // Calculate category breakdown
+    const categoryTotals: Record<string, number> = {};
+    for (const tx of monthlyTxs) {
+      if (tx.type === 'expense') {
+        categoryTotals[tx.category] = (categoryTotals[tx.category] || 0) + tx.amount;
+      }
+    }
+
+    const activeGoals = userGoals
+      .filter((g) => g.status === 'active')
+      .map((g) => ({
+        name: g.name,
+        target: g.targetAmount,
+        saved: g.savedAmount,
+        deadline: g.deadline || '2026-12-31',
+      }));
+
+    const result = await getAiFinancialAdvice({
+      fullName: user.displayName || 'İstifadəçi',
+      monthlyIncome: monthlyTotals.income,
+      monthlyExpenses: monthlyTotals.expenses,
+      netCashFlow: monthlyTotals.netCashFlow,
+      totalBalance,
+      currency: user.preferredCurrency || 'AZN',
+      categoryTotals,
+      activeGoals,
+      streak: streak ? streak.currentStreak : 0,
+      question: typeof question === 'string' && question.trim().length > 0 ? question.trim() : undefined,
+    });
+
+    res.json({
+      success: true,
+      advice: result.advice,
+      isAiGenerated: result.isAiGenerated,
+      insights: result.insights,
+      suggestedActions: result.suggestedActions,
+      metricsSnapshot: {
+        totalBalance,
+        monthlyIncome: monthlyTotals.income,
+        monthlyExpenses: monthlyTotals.expenses,
+        netCashFlow: monthlyTotals.netCashFlow,
+        currency: user.preferredCurrency || 'AZN',
+      },
+    });
+  } catch (err: any) {
+    console.error('Error generating AI advice:', err);
+    res.status(500).json({ error: 'Süni intellekt məsləhətçisi cavab verə bilmədi: ' + (err.message || 'Xəta') });
+  }
+});
+
+// Parse natural language transaction using Gemini AI
+app.post('/api/ai/parse-transaction', authenticate, async (req: Request, res: Response) => {
+  try {
+    const { text } = req.body;
+    if (!text || typeof text !== 'string' || text.trim().length === 0) {
+      return res.status(400).json({ error: 'Mətn daxil edilməlidir (məsələn: "Bravo-da 35 manat kartla xərclədim").' });
+    }
+
+    const parsed = await parseTransactionWithAi(text.trim());
+    res.json({ success: true, transaction: parsed });
+  } catch (err: any) {
+    console.error('Error parsing transaction with AI:', err);
+    res.status(500).json({ error: 'Əməliyyat mətnini təhlil etmək mümkün olmadı.' });
+  }
+});
+
+// Quick log natural language transaction directly to DB
+app.post('/api/ai/quick-log', authenticate, async (req: Request, res: Response) => {
+  try {
+    const user = (req as any).user as UserRecord;
+    const { text } = req.body;
+
+    if (!text || typeof text !== 'string' || text.trim().length === 0) {
+      return res.status(400).json({ error: 'Mətn daxil edilməlidir.' });
+    }
+
+    const parsed = await parseTransactionWithAi(text.trim());
+    const db = readDb();
+
+    const newTx: Transaction = {
+      id: 'tx_' + crypto.randomUUID(),
+      userId: user.id,
+      type: parsed.type,
+      amount: roundToCents(parsed.amount),
+      date: new Date(parsed.date).toISOString(),
+      category: parsed.category as Category,
+      description: parsed.description,
+      paymentMethod: parsed.paymentMethod,
+      note: 'Süni intellektlə sürətli daxil edildi: "' + text.slice(0, 80) + '"',
+      isRecurring: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    db.transactions.push(newTx);
+    saveDb(db);
+
+    const { streak, newlyUnlocked } = recordUserActivity(user.id, 'transaction', db);
+
+    res.status(201).json({
+      success: true,
+      transaction: newTx,
+      streak,
+      newlyUnlocked,
+      parsedPreview: parsed,
+    });
+  } catch (err: any) {
+    console.error('Error in AI quick log:', err);
+    res.status(500).json({ error: 'Süni intellektlə qeyd etmək mümkün olmadı.' });
+  }
 });
 
 // ==========================================
